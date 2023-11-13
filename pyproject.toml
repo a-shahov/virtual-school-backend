@@ -1,0 +1,43 @@
+[build-system]
+requires = [
+    "setuptools",
+    "setuptools-scm",
+    "wheel",
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "virtual-school-backend"
+version = "0.0.1"
+description = "Backend for virtual school on Flask"
+readme = "README.md"
+authors = [
+    {name = "Andrey Shahov", email = "a.shahov.garlic@yandex.ru"},
+]
+requires-python = ">=3.12"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "Flask>=3",
+    "gunicorn",
+    "python-dotenv",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pip-tools",
+]
+test = [
+    "pytest",
+]
+docs = [
+]
+
+[project.scripts]
+backend-run = "virtual_school_backend.__main__:main"
+
+[tool.pip-tools]
+generate-hashes = true
+allow-unsafe = true
