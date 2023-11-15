@@ -1,5 +1,5 @@
 graft tests
+graft scripts
 graft docs
 
-exclude .flaskenv
 global-exclude *.py[cod]

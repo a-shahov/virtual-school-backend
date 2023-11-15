@@ -9,7 +9,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "virtual-school-backend"
 version = "0.0.1"
-description = "Backend for virtual school on Flask"
+description = "Backend for virtual school on"
 readme = "README.md"
 authors = [
     {name = "Andrey Shahov", email = "a.shahov.garlic@yandex.ru"},
@@ -20,9 +20,6 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 dependencies = [
-    "Flask>=3",
-    "Flask-SQLAlchemy",
-    "flask-migrate",
     "gunicorn",
     "python-dotenv",
 ]
@@ -38,7 +35,7 @@ docs = [
 ]
 
 [project.scripts]
-backend-run = "virtual_school_backend.__main__:main"
+virtual-school-backend = "virtual_school_backend.__main__:main"
 
 [tool.pip-tools]
 generate-hashes = true
