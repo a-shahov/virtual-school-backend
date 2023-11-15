@@ -1,0 +1,1 @@
+from virtual_school_backend.subapp import SubApp
