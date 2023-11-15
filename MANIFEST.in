@@ -1,0 +1,5 @@
+graft tests
+graft docs
+
+exclude .flaskenv
+global-exclude *.py[cod]

@@ -1,1 +1,2 @@
 FLASK_APP=virtual_school_backend.__main__
+FLASK_ENV=development

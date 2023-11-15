@@ -21,6 +21,8 @@ classifiers = [
 ]
 dependencies = [
     "Flask>=3",
+    "Flask-SQLAlchemy",
+    "flask-migrate",
     "gunicorn",
     "python-dotenv",
 ]
