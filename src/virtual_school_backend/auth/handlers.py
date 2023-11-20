@@ -1,5 +1,7 @@
-from aiohttp.web import View
-from aiohttp.web import Response
+from aiohttp.web import (
+    View,
+    Response,
+) 
 
 
 class LoginHandler(View):

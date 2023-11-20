@@ -4,6 +4,7 @@ import sys
 
 import uvloop
 from aiohttp.web import Application
+#  TODO: change to AppRunner
 from aiohttp.web import run_app
 
 from virtual_school_backend.auth import AuthApp
@@ -11,7 +12,19 @@ from virtual_school_backend.user import UserApp
 from virtual_school_backend.main import MainApp
 
 
+#  TODO: make inheritance from Application
 class Backend:
+    """
+    routing
+    config
+    argparse
+    background jobs
+    setup logging
+    middlewares
+    setup database
+    unix socket
+    pytest
+    """
     UrlHandlers = []
 
     def __init__(
@@ -29,9 +42,9 @@ class Backend:
         asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
         app = Application()
 
-        app.add_subapp('/auth', AuthApp().get_app())
-        #app.add_subapp('/user', UserApp().get_app())
-        #app.add_subapp('/main', MainApp().get_app())
+        app.add_subapp('/auth/', AuthApp())
+        app.add_subapp('/user/', UserApp())
+        app.add_subapp('/main/', MainApp())
 
         run_app(app, host=self._host, port=self._port)
 

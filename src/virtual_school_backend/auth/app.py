@@ -1,8 +1,10 @@
 from virtual_school_backend import SubApp
-from .handlers import LoginHandler
-from .handlers import RegistrationHandler
-from .handlers import LogoutHandler
-from .handlers import WhoamiHandler
+from .handlers import (
+    LoginHandler,
+    RegistrationHandler,
+    LogoutHandler,
+    WhoamiHandler,
+)
 
 
 class AuthApp(SubApp):
