@@ -3,17 +3,19 @@ import asyncio
 import sys
 
 import uvloop
-from aiohttp.web import Application
-#  TODO: change to AppRunner
-from aiohttp.web import run_app
+from aiohttp.web import (
+    Application,
+    AppRunner,
+    TCPSite,
+    run_app,
+)
 
 from virtual_school_backend.auth import AuthApp
 from virtual_school_backend.user import UserApp
 from virtual_school_backend.main import MainApp
 
 
-#  TODO: make inheritance from Application
-class Backend:
+class Backend(Application):
     """
     routing
     config
@@ -25,33 +27,25 @@ class Backend:
     unix socket
     pytest
     """
-    UrlHandlers = []
-
+    #  TODO: add logging
+    #  TODO: add error handling
+    #  TODO: add runner.cleanup
     def __init__(
         self,
-        *,
-        port = None,
-        host = '127.0.0.1',
+        *args,
+        **kwargs,
     ):
-        self._host = host
-        self._port = port
-
-    def run(self):
-        #  TODO: add logging
-        #  TODO: add error handling
-        asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
-        app = Application()
-
-        app.add_subapp('/auth/', AuthApp())
-        app.add_subapp('/user/', UserApp())
-        app.add_subapp('/main/', MainApp())
-
-        run_app(app, host=self._host, port=self._port)
+        super().__init__(*args, **kwargs)
+        
+        self.add_subapp('/auth/', AuthApp())
+        self.add_subapp('/user/', UserApp())
+        self.add_subapp('/main/', MainApp())
 
 
 def main():
-    # TODO: add argparse
-    Backend(port=8000).run()
+    #  TODO: add argparse
+    asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+    run_app(Backend(), port=8000, host='127.0.0.1')
 
 
 if __name__ == '__main__':
