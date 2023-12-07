@@ -12,7 +12,7 @@ from aiohttp.web import (
 
 from virtual_school_backend.auth import AuthApp
 from virtual_school_backend.user import UserApp
-from virtual_school_backend.main import MainApp
+from virtual_school_backend.mainpage import MainApp
 
 
 class Backend(Application):
