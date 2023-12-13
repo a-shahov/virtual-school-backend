@@ -1,7 +1,18 @@
+import os
+from dotenv import load_dotenv
 from psycopg import Connection
 
 
-DSN = 'dbname=test user=postgres host=localhost port=5432 password=qwerty'
+load_dotenv()
+
+DSN = (
+    f'dbname={os.getenv("DB_NAME")} '
+    f'user={os.getenv("DB_USER")} '
+    f'host={os.getenv("DB_HOST")} '
+    f'port={os.getenv("DB_PORT")} '
+    f'password={os.getenv("DB_PASSWORD")}'
+)
+
 
 CREATE_ENUM_USERROLE = """
     CREATE TYPE UserRole 
@@ -149,25 +160,26 @@ CREATE_NEWS_TABLE = """
 """, 'creating news table...'
 
 
+commands = [
+    CREATE_ENUM_USERROLE,
+    CREATE_LOGIN_TABLE,
+    CREATE_ENUM_USERSTATE,
+    CREATE_CLASSNUM_DOMAIN,
+    CREATE_USER_ACCOUNT_TABLE,
+    ALTER_LOGIN_TABLE,
+    CREATE_ENUM_ATTESTATIONSUBJECT,
+    CREATE_ATTESTATION_TABLE,
+    CREATE_ESTIMATION_TABLE,
+    CREATE_NOTIFICATION_TABLE,
+    CREATE_USER_NOTIFICATON_TABLE,
+    CREATE_NEWS_TABLE,
+]
+
+
 with Connection.connect(DSN) as conn:
 
     with conn.cursor() as cur:
         
-        commands = [
-            CREATE_ENUM_USERROLE,
-            CREATE_LOGIN_TABLE,
-            CREATE_ENUM_USERSTATE,
-            CREATE_CLASSNUM_DOMAIN,
-            CREATE_USER_ACCOUNT_TABLE,
-            ALTER_LOGIN_TABLE,
-            CREATE_ENUM_ATTESTATIONSUBJECT,
-            CREATE_ATTESTATION_TABLE,
-            CREATE_ESTIMATION_TABLE,
-            CREATE_NOTIFICATION_TABLE,
-            CREATE_USER_NOTIFICATON_TABLE,
-            CREATE_NEWS_TABLE,
-        ]
-
         for command, desc in commands:
             #  TODO: add logging!!
             print(desc)

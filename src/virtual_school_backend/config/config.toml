@@ -1,0 +1,6 @@
+title = """\
+        Config file for virtual school backend, \
+        this file contains only inner confuguration parameters. \
+        For example admin credentials for dev enviroment. \
+        """
+
