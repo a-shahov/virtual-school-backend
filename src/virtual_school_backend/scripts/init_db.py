@@ -1,6 +1,6 @@
 from psycopg import Connection
 
-from virtual_school_backend.config import DSN
+from virtual_school_backend.config import Config
 
 
 CREATE_ENUM_USERROLE = """
@@ -18,7 +18,8 @@ CREATE_LOGIN_TABLE = """
         user_id integer,
         role UserRole NOT NULL,
         email text NOT NULL,
-        password text NOT NULL,
+        password bytea NOT NULL,
+        salt bytea NOT NULL,
         created timestamptz,
         last_activity timestamptz,
 
@@ -36,7 +37,7 @@ CREATE_TOKENS_TABLE = """
         FOREIGN KEY ( login_id ) REFERENCES login ( id ),
         CONSTRAINT token_not_empty CHECK ( trim( token ) <> '' )
     );
-""", 'creating tokens table'
+""", 'creating tokens table...'
 
 CREATE_ENUM_USERSTATE = """
     CREATE TYPE UserState
@@ -179,7 +180,7 @@ commands = [
 ]
 
 def main():
-    with Connection.connect(DSN) as conn:
+    with Connection.connect(Config.DSN) as conn:
         with conn.cursor() as cur:
             
             for command, desc in commands:

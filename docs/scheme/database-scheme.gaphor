@@ -429,6 +429,7 @@ existing classes or even new classes with specific responsibilities.</val>
 <ref refid="eab4011c-8d08-11ee-a385-4d3c4d4f3f47"/>
 <ref refid="a44e6367-8d13-11ee-aa98-4d3c4d4f3f47"/>
 <ref refid="01e9087a-8d0c-11ee-bdd2-4d3c4d4f3f47"/>
+<ref refid="f34cb0b6-9e45-11ee-b78f-37cdcaf7b138"/>
 <ref refid="07734e8d-8d0a-11ee-b5db-4d3c4d4f3f47"/>
 <ref refid="40468a3c-8d0c-11ee-9706-4d3c4d4f3f47"/>
 </reflist>
@@ -453,7 +454,7 @@ existing classes or even new classes with specific responsibilities.</val>
 <val>288.0</val>
 </width>
 <height>
-<val>225.57843232458129</val>
+<val>230.0</val>
 </height>
 <diagram>
 <ref refid="bcde3146-8cea-11ee-940d-4d3c4d4f3f47"/>
@@ -565,7 +566,7 @@ existing classes or even new classes with specific responsibilities.</val>
 <val>password</val>
 </name>
 <typeValue>
-<val>text</val>
+<val>bytea</val>
 </typeValue>
 </Property>
 <Property id="40468a3c-8d0c-11ee-9706-4d3c4d4f3f47">
@@ -971,7 +972,7 @@ existing classes or even new classes with specific responsibilities.</val>
 <val>(1.0, 0.0, 0.0, 1.0, -524.0382273707921, 746.9321481209516)</val>
 </matrix>
 <points>
-<val>[(-126.26406481046297, 95.77176570789754), (-64.99213393258708, 0.0)]</val>
+<val>[(-126.26406481046297, 96.26078847807071), (-64.99213393258708, 0.0)]</val>
 </points>
 <head-connection>
 <ref refid="0c06753a-8d12-11ee-8098-4d3c4d4f3f47"/>
@@ -1523,7 +1524,7 @@ existing classes or even new classes with specific responsibilities.</val>
 <val>(1.0, 0.0, 0.0, 1.0, -377.6578438623941, 205.82515628823035)</val>
 </matrix>
 <points>
-<val>[(0.0, -2.2155564133229007), (0.0, 39.10135260578892), (293.692965361093, 39.10135260578892), (293.692965361093, 88.28215534264388)]</val>
+<val>[(0.0, 2.206011262095899), (0.0, 39.10135260578892), (293.692965361093, 39.10135260578892), (293.692965361093, 88.28215534264388)]</val>
 </points>
 <head-connection>
 <ref refid="4853c798-8d08-11ee-ba5c-4d3c4d4f3f47"/>
@@ -1748,7 +1749,7 @@ existing classes or even new classes with specific responsibilities.</val>
 <val>(1.0, 0.0, 0.0, 1.0, -209.35964950153172, 81.50233682491641)</val>
 </matrix>
 <points>
-<val>[(10.21614323304675, -38.81208838775734), (75.12569901728463, -38.81208838775734), (75.12528050885157, -438.1302170197343), (128.95973633085663, -438.1302170197343)]</val>
+<val>[(10.21614323304675, -37.544704360723514), (75.12569901728463, -38.81208838775734), (75.12528050885157, -438.1302170197343), (128.95973633085663, -438.1302170197343)]</val>
 </points>
 <head-connection>
 <ref refid="4853c798-8d08-11ee-ba5c-4d3c4d4f3f47"/>
@@ -2122,7 +2123,7 @@ existing classes or even new classes with specific responsibilities.</val>
 <val>(1.0, 0.0, 0.0, 1.0, 597.2585323013702, 379.179292191226)</val>
 </matrix>
 <points>
-<val>[(1.518696133494359, 0.0), (-43.95531672708012, 0.0), (-43.95531672708012, -222.4447218773338), (-731.4924827856173, -222.44472187733368), (-796.4020385698552, -222.4447218773338)]</val>
+<val>[(1.518696133494359, 0.0), (-43.95531672708012, 0.0), (-43.95531672708012, -222.4447218773338), (-731.4924827856173, -222.44472187733368), (-796.4020385698552, -218.94195265864457)]</val>
 </points>
 <head-connection>
 <ref refid="cb1b2442-8d0c-11ee-b443-4d3c4d4f3f47"/>
@@ -2340,7 +2341,7 @@ existing classes or even new classes with specific responsibilities.</val>
 <val>(1.0, 0.0, 0.0, 1.0, -201.7826103982467, 110.53540172908674)</val>
 </matrix>
 <points>
-<val>[(2.6391041297616766, 0.0), (67.54824140556656, 0.0), (121.38269722757161, 0.0), (121.38269722757161, -67.84515329192777), (170.73224710643373, -67.84515329192777)]</val>
+<val>[(2.6391041297616766, 2.5972183274060114), (67.54824140556656, 0.0), (121.38269722757161, 0.0), (121.38269722757161, -67.84515329192777), (170.73224710643373, -67.84515329192777)]</val>
 </points>
 <head-connection>
 <ref refid="4853c798-8d08-11ee-ba5c-4d3c4d4f3f47"/>
@@ -2410,5 +2411,16 @@ existing classes or even new classes with specific responsibilities.</val>
 <upperValue>
 <val>*</val>
 </upperValue>
+</Property>
+<Property id="f34cb0b6-9e45-11ee-b78f-37cdcaf7b138">
+<class_>
+<ref refid="485317aa-8d08-11ee-91c5-4d3c4d4f3f47"/>
+</class_>
+<name>
+<val>salt</val>
+</name>
+<typeValue>
+<val>bytea</val>
+</typeValue>
 </Property>
 </gaphor>
