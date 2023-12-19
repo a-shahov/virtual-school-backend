@@ -1,17 +1,6 @@
-import os
-from dotenv import load_dotenv
 from psycopg import Connection
 
-
-load_dotenv()
-
-DSN = (
-    f'dbname={os.getenv("DB_NAME")} '
-    f'user={os.getenv("DB_USER")} '
-    f'host={os.getenv("DB_HOST")} '
-    f'port={os.getenv("DB_PORT")} '
-    f'password={os.getenv("DB_PASSWORD")}'
-)
+from virtual_school_backend.config import DSN
 
 
 CREATE_ENUM_USERROLE = """
@@ -28,13 +17,26 @@ CREATE_LOGIN_TABLE = """
         id serial,
         user_id integer,
         role UserRole NOT NULL,
+        email text NOT NULL,
         password text NOT NULL,
         created timestamptz,
         last_activity timestamptz,
 
-        PRIMARY KEY ( id )
+        PRIMARY KEY ( id ),
+        UNIQUE ( email )
     );
 """, 'creating login table...'
+
+CREATE_TOKENS_TABLE = """
+    CREATE TABLE tokens (
+        login_id bigserial,
+        token text NOT NULL,
+
+        PRIMARY KEY ( login_id, token ),
+        FOREIGN KEY ( login_id ) REFERENCES login ( id ),
+        CONSTRAINT token_not_empty CHECK ( trim( token ) <> '' )
+    );
+""", 'creating tokens table'
 
 CREATE_ENUM_USERSTATE = """
     CREATE TYPE UserState
@@ -163,6 +165,7 @@ CREATE_NEWS_TABLE = """
 commands = [
     CREATE_ENUM_USERROLE,
     CREATE_LOGIN_TABLE,
+    CREATE_TOKENS_TABLE,
     CREATE_ENUM_USERSTATE,
     CREATE_CLASSNUM_DOMAIN,
     CREATE_USER_ACCOUNT_TABLE,
@@ -175,14 +178,13 @@ commands = [
     CREATE_NEWS_TABLE,
 ]
 
-
-with Connection.connect(DSN) as conn:
-
-    with conn.cursor() as cur:
-        
-        for command, desc in commands:
-            #  TODO: add logging!!
-            print(desc)
-            cur.execute(command)
-
-    conn.commit()
+def main():
+    with Connection.connect(DSN) as conn:
+        with conn.cursor() as cur:
+            
+            for command, desc in commands:
+                #  TODO: add logging!!
+                print(desc)
+                cur.execute(command)
+    
+        conn.commit()
