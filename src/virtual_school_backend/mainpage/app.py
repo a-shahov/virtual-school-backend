@@ -1,7 +1,9 @@
 from virtual_school_backend import SubApp
-from .handlers import InfoHandler
-from .handlers import NewsHandler
-from .handlers import CoursesHandler
+from .handlers import (
+    InfoHandler,
+    NewsHandler,
+    CoursesHandler,
+)
 
 
 class MainApp(SubApp):

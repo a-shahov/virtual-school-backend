@@ -972,7 +972,7 @@ existing classes or even new classes with specific responsibilities.</val>
 <val>(1.0, 0.0, 0.0, 1.0, -524.0382273707921, 746.9321481209516)</val>
 </matrix>
 <points>
-<val>[(-126.26406481046297, 96.26078847807071), (-64.99213393258708, 0.0)]</val>
+<val>[(-126.26406481046297, 96.68674786685744), (-64.99213393258708, 0.0)]</val>
 </points>
 <head-connection>
 <ref refid="0c06753a-8d12-11ee-8098-4d3c4d4f3f47"/>
@@ -2304,7 +2304,7 @@ existing classes or even new classes with specific responsibilities.</val>
 <ref refid="4743c66c-9e18-11ee-8180-413c39f2f8a7"/>
 </class_>
 <name>
-<val>&lt;&lt;FK&gt;&gt; login_id: bigserial</val>
+<val>+ &lt;&lt;FK&gt;&gt; login_id: bigint</val>
 </name>
 </Property>
 <Property id="98e30fa3-9e18-11ee-9ea4-413c39f2f8a7">

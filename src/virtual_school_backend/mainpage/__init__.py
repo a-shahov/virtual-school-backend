@@ -1,1 +1,1 @@
-from virtual_school_backend.main.app import MainApp
+from virtual_school_backend.mainpage.app import MainApp

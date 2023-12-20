@@ -9,7 +9,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "virtual-school-backend"
 version = "0.1.0"
-description = "Backend for virtual school on"
+description = "Backend for virtual school on aiohttp"
 readme = "README.md"
 authors = [
     {name = "Andrey Shahov", email = "a.shahov.garlic@yandex.ru"},
@@ -22,9 +22,9 @@ classifiers = [
 dependencies = [
     "aiohttp",
     "uvloop",
-    "psycopg[binary]",
-    "gunicorn",
+    "psycopg[binary, pool]",
     "python-dotenv",
+    "pyjwt[crypto]",
 ]
 
 [project.optional-dependencies]
@@ -39,6 +39,7 @@ docs = [
 
 [project.scripts]
 virtual-school-backend = "virtual_school_backend.__main__:main"
+init_db = "virtual_school_backend.scripts.init_db:main"
 
 [tool.pip-tools]
 generate-hashes = true
