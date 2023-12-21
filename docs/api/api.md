@@ -27,6 +27,8 @@
 
 ### __auth__
 
+> Authorization flow: первоначально неаутентифицированный клиент шлёт запрос на __/auth/login__ с парой email/password, в случае успешной аутентификации он в ответе получает access token и время его жизни, а также у него в cookie выставляется HttpOnly refresh_token. Далее выставляя полученный access token в заголовок запроса __Authorization: Bearer \<token\>__, клиент получает возможность делать аутентифицированные запросы на endpoints. К концу срока жизни access token, клиент может получить новый access token с помощью своего refresh token послав __GET /auth/refresh_token__. В случае если его refresh token валиден (его ещё не использовали и не истёк срок жизни), то в ответ он получит новую пару access token и refresh token. Access token никак нельзя отозвать. При отправлении запроса на __/auth/logout__ все refresh token с данным jti станут невалидными и будут удалены из бд. В случае истечения срока жизни refresh token, клиенту нужно будет пройти повторную аутентификацию.
+
 + __POST__ `/auth/login`<br>
 _description:_ endpoint for login action<br>
 _permission:_ __anonym__<br>
