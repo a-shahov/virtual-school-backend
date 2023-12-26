@@ -3,7 +3,8 @@ from aiohttp.web import (
     Response,
     json_response,
     HTTPBadRequest,
-) 
+)
+import jwt
 
 from virtual_school_backend import (
     ROOT_APP,
@@ -13,10 +14,11 @@ from virtual_school_backend import (
 )
 from .tools import (
     generate_hash,
-    generate_token,
+    generate_access_token,
+    generate_refresh_token,
 )
 
-# TODO: NEED cerberus
+#  TODO: NEED cerberus
 LOGIN_SCHEME = ''
 REFRESH_SCHEME = ''
 REGISTRATION_SCHEME = ''
@@ -26,10 +28,10 @@ LOGIN_QUERY_SELECT = """
         FROM login
         WHERE email = %s;
 """
-# TODO: NEED deletes rotten tokens
+#  SELECT extract( epoch from date_trunc('seconds', now()) at time zone 'utc')::numeric(20)
 LOGIN_QUERY_INSERT = """
-    INSERT INTO tokens ( login_id, token )
-        VALUES ( %s, %s );
+    INSERT INTO tokens ( login_id, token, jti, exp )
+        VALUES ( %s, %s, %s, %s );
 """
 REGISTRATION_QUERY = ''
 REFRESH_QUERY = ''
@@ -47,12 +49,10 @@ class LoginHandler(View):
             async with conn.cursor() as acur:
 
                 await acur.execute(LOGIN_QUERY_SELECT, (body['email'],))
-
                 if not (result := await acur.fetchone()):
-                    # TODO: need add error message
                     raise HTTPBadRequest(reason='email not in database')
-                login_id, role, password_db, salt = result
 
+                login_id, role, password_db, salt = result
                 password = generate_hash(
                     body['password'], config.PASS_KEY, salt=salt,
                 )
@@ -61,29 +61,43 @@ class LoginHandler(View):
                     #raise HTTPBadRequest(reason='wrong password')
                     ...
                                     
-                access_token = generate_token(
-                    config.BACKEND_NAME, 
-                    role,
-                    config.ACCESS_TOKEN_EXP,
-                    config.TOKEN_KEY,
-                    config.TOKEN_ALG,
-                )
-                refresh_token = generate_token(
-                    config.BACKEND_NAME, 
-                    role,
-                    config.REFRESH_TOKEN_EXP,
-                    config.TOKEN_KEY,
-                    config.TOKEN_ALG,
+                access_token = generate_access_token(config, {'sub': role})
+                access_payload = jwt.decode(
+                    access_token, config.TOKEN_KEY,
+                    algorithms=config.TOKEN_ALG,
                 )
 
-                await acur.execute(LOGIN_QUERY_INSERT, (login_id, refresh_token))
+                refresh_token = generate_refresh_token(config)
+                refresh_payload = jwt.decode(
+                    refresh_token, config.TOKEN_KEY,
+                    algorithms=config.TOKEN_ALG,
+                )
+
+                await acur.execute(
+                    LOGIN_QUERY_INSERT,
+                    (
+                        login_id,
+                        refresh_token,
+                        refresh_payload['jti'],
+                        refresh_payload['exp'],
+                    ),
+                )
                 #  TODO: update timestamp in db
+                #  TODO: need delete rotten tokens
+        
+        expires_in = round(access_payload['exp'] - access_payload['iat'])
         response = json_response(
             {
                 'role': role,
                 'access_token': access_token,
-                'refresh_token': refresh_token,
+                'expires_in': expires_in,
+                'expires': round(refresh_payload['exp']),
             }
+        )
+        response.set_cookie(
+            '__Secure-refresh-token', refresh_token,
+            path='/auth/refresh', httponly=True,
+            secure=True, samesite='Strict',
         )
         return response
 

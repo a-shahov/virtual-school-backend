@@ -32,10 +32,13 @@ CREATE_TOKENS_TABLE = """
     CREATE TABLE tokens (
         login_id bigserial,
         token text NOT NULL,
+        jti text NOT NULL,
+        exp numeric( 12 ) NOT NULL,
 
         PRIMARY KEY ( login_id, token ),
         FOREIGN KEY ( login_id ) REFERENCES login ( id ),
-        CONSTRAINT token_not_empty CHECK ( trim( token ) <> '' )
+        CONSTRAINT token_not_empty CHECK ( trim( token ) <> '' ),
+        UNIQUE ( jti )
     );
 """, 'creating tokens table...'
 

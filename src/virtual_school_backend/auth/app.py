@@ -12,7 +12,7 @@ class AuthApp(SubApp):
     UrlHandlers = [
         ('/login', LoginHandler),
         ('/registration', RegistrationHandler),
-        ('/refresh_token', RefreshHandler),
+        ('/refresh', RefreshHandler),
         ('/logout', LogoutHandler),
         ('/whoami', WhoamiHandler),
     ]

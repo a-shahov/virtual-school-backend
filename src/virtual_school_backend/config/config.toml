@@ -7,6 +7,7 @@ title = """\
 salt_len = 8  # from 0 to 16 bytes for blake2b
 
 [jwt_token]
+token_algorithm = "HS256"
 access_token_exp = 360  # lifetime in seconds
 refresh_token_exp = 2592000  # 2592000 is 1 month
-token_algorithm = "HS256"
+jti_len = 32

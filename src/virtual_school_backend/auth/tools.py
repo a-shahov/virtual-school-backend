@@ -1,5 +1,8 @@
 from hashlib import blake2b
-from secrets import token_bytes
+from secrets import (
+    token_bytes,
+    token_urlsafe,
+)
 from datetime import (
     datetime as dt,
     timezone as tz,
@@ -20,17 +23,36 @@ def generate_hash(data, key, *, salt_len=None, salt=None):
 
     return pass_hash, salt
 
-def generate_token(iss, sub, exp, key, algorithm):
-    """Generates JWT token"""
+def generate_access_token(config, claims):
+    """Generates JWT access token"""
     token = jwt.encode(
         {
-            'iss': iss,
-            'sub': sub,
-            'iat': (timestamp := round(dt.now(tz=tz.utc).timestamp())),
-            'exp': timestamp + exp,
+            'iss': config.BACKEND_NAME,
+            'sub': claims['sub'],
+            'iat': (timestamp := dt.now(tz=tz.utc).timestamp()),
+            'exp': timestamp + config.ACCESS_TOKEN_EXP,
         },
-        key,
-        algorithm=algorithm,
+        config.TOKEN_KEY,
+        algorithm=config.TOKEN_ALG,
     )
     
     return token
+
+def generate_refresh_token(config, claims={}):
+    """
+    Generates JWT refresh token.
+    If 'jti' not in claims, generates new jti.
+    """
+    token = jwt.encode(
+        {
+            'iss': config.BACKEND_NAME,
+            'jti': claims.get('jti', token_urlsafe(config.JTI_LEN)),
+            'iat': (timestamp := dt.now(tz=tz.utc).timestamp()),
+            'exp': timestamp + config.REFRESH_TOKEN_EXP,
+        },
+        config.TOKEN_KEY,
+        algorithm=config.TOKEN_ALG,
+    )
+    
+    return token
+

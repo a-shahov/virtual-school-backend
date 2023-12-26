@@ -34,5 +34,6 @@ class Config:
 
     TOKEN_KEY = os.getenv('TOKEN_KEY')  # key for generate jwt token
     TOKEN_ALG = conf_toml['jwt_token']['token_algorithm']
+    JTI_LEN = conf_toml['jwt_token']['jti_len']
     ACCESS_TOKEN_EXP = conf_toml['jwt_token']['access_token_exp']
     REFRESH_TOKEN_EXP = conf_toml['jwt_token']['refresh_token_exp']
