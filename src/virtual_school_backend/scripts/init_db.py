@@ -69,7 +69,9 @@ CREATE_USER_ACCOUNT_TABLE = """
         class ClassNum,
 
         PRIMARY KEY ( id ),
-        FOREIGN KEY ( login_id ) REFERENCES login ( id )
+        FOREIGN KEY ( login_id ) REFERENCES login ( id ),
+        UNIQUE ( phone ),
+        UNIQUE ( name, secondname, patronymic )
     );
 """, 'creating user_account table...'
 

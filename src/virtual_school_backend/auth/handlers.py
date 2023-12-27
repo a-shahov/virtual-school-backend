@@ -18,48 +18,68 @@ from .tools import (
     generate_refresh_token,
 )
 
-#  TODO: NEED cerberus
+# TODO: NEED cerberus
 LOGIN_SCHEME = ''
 REFRESH_SCHEME = ''
 REGISTRATION_SCHEME = ''
 
-LOGIN_QUERY_SELECT = """
+# TODO: need rewrite all SQL queries
+SELECT_LOGIN_BY_EMAIL = """
     SELECT id, role, password, salt
         FROM login
         WHERE email = %s;
 """
 #  SELECT extract( epoch from date_trunc('seconds', now()) at time zone 'utc')::numeric(20)
-LOGIN_QUERY_INSERT = """
+INSERT_TOKENS = """
     INSERT INTO tokens ( login_id, token, jti, exp )
         VALUES ( %s, %s, %s, %s );
 """
-REGISTRATION_QUERY = ''
-REFRESH_QUERY = ''
-LOGOUT_QUERY = ''
+SELECT_USER = """
+    SELECT phone, name, secondname, patronymic
+        FROM user_account
+        WHERE phone = %s OR
+        name = %s AND secondname = %s
+        AND patronymic = %s;
+"""
+INSERT_LOGIN = """
+    INSERT INTO login ( role, email, password, salt )
+        VALUES ( %s, %s, %b, %b )
+"""
+INSERT_USER = """
+    INSERT INTO user_account ( login_id, state, name, secondname, patronymic, phone, class)
+        VALUES ( %s, %s, %s, %s, %s, %s, %s);
+"""
+SELECT_USER_BY_ID = """
+    SELECT id FROM user_account
+        WHERE login_id = %s;
+"""
+UPDATE_LOGIN = """
+    UPDATE login
+        SET user_id = %s WHERE id = %s;
+"""
 
 
 class LoginHandler(View):
 
     @validate_json_request(LOGIN_SCHEME)
-    async def post(self, body):
+    async def post(self, json_data):
         config = self.request.app[ROOT_APP][CONFIG]
         pg_pool = self.request.app[ROOT_APP][PG_POOL]
 
         async with pg_pool.connection() as conn:
             async with conn.cursor() as acur:
 
-                await acur.execute(LOGIN_QUERY_SELECT, (body['email'],))
+                await acur.execute(SELECT_LOGIN_BY_EMAIL, (json_data['email'],))
                 if not (result := await acur.fetchone()):
                     raise HTTPBadRequest(reason='email not in database')
 
-                login_id, role, password_db, salt = result
-                password = generate_hash(
-                    body['password'], config.PASS_KEY, salt=salt,
+                login_id, role, pass_hash_db, salt = result
+                pass_hash, unused = generate_hash(
+                    json_data['password'], config, salt=salt,
                 )
 
-                if password != password_db:
-                    #raise HTTPBadRequest(reason='wrong password')
-                    ...
+                if pass_hash != pass_hash_db:
+                    raise HTTPBadRequest(reason='wrong password')
                                     
                 access_token = generate_access_token(config, {'sub': role})
                 access_payload = jwt.decode(
@@ -74,7 +94,7 @@ class LoginHandler(View):
                 )
 
                 await acur.execute(
-                    LOGIN_QUERY_INSERT,
+                    INSERT_TOKENS,
                     (
                         login_id,
                         refresh_token,
@@ -88,7 +108,7 @@ class LoginHandler(View):
         expires_in = round(access_payload['exp'] - access_payload['iat'])
         response = json_response(
             {
-                'role': role,
+                'token_type': 'Bearer',
                 'access_token': access_token,
                 'expires_in': expires_in,
                 'expires': round(refresh_payload['exp']),
@@ -98,19 +118,69 @@ class LoginHandler(View):
             '__Secure-refresh-token', refresh_token,
             path='/auth/refresh', httponly=True,
             secure=True, samesite='Strict',
+            max_age=round(refresh_payload['exp'] - refresh_payload['iat']),
         )
         return response
 
 class RefreshHandler(View):
     @validate_json_request(REFRESH_SCHEME)
-    async def post(self, body):
+    async def post(self, json_data):
         return Response(text='refresh')
 
 
 class RegistrationHandler(View):
     @validate_json_request(REGISTRATION_SCHEME)
-    async def post(self, body):
-        return Response(text='registration')
+    async def post(self, json_data):
+        pg_pool = self.request.app[ROOT_APP][PG_POOL]
+        config = self.request.app[ROOT_APP][CONFIG]
+
+        async with pg_pool.connection() as conn:
+            async with conn.cursor() as acur:
+             
+                await acur.execute(SELECT_LOGIN_BY_EMAIL, (json_data['email'],))
+                if await acur.fetchone():
+                    raise HTTPBadRequest(reason='email already exists')
+                
+                await acur.execute(
+                    SELECT_USER,
+                    (
+                        json_data['phone'],
+                        json_data['name'],
+                        json_data['secondname'],
+                        json_data['patronymic'],
+                    ),
+                )
+                if (result := await acur.fetchone()):
+                    phone, *unused = result
+                    if phone == json_data['phone']:
+                        raise HTTPBadRequest(reason='phone number already exists')
+                    raise HTTPBadRequest(reason='user already exists')
+
+                await acur.execute(INSERT_LOGIN, (
+                    'user',
+                    json_data['email'],
+                    *generate_hash(json_data['password'], config),
+                ))
+
+                await acur.execute(SELECT_LOGIN_BY_EMAIL, (json_data['email'],))
+                login_id, *unused = await acur.fetchone()
+
+                await acur.execute(INSERT_USER, (
+                    login_id,
+                    'new',
+                    json_data['name'],
+                    json_data['secondname'],
+                    json_data['patronymic'],
+                    json_data['phone'],
+                    json_data['class'],
+                ))
+
+                await acur.execute(SELECT_USER_BY_ID, (login_id,))
+                user_id, = await acur.fetchone()
+
+                await acur.execute(UPDATE_LOGIN, (user_id, login_id))
+                
+        return Response()
 
 
 class LogoutHandler(View):

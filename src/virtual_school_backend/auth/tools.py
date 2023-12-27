@@ -12,19 +12,19 @@ from datetime import (
 import jwt
 
 
-def generate_hash(data, key, *, salt_len=None, salt=None):
+def generate_hash(password, config, *, salt=None):
     """
     Generates a hash and a salt and returns them.
-    If salt is not None then does not generate new salt with salt_len.
     """
-    assert salt or salt_len, 'salt or salt_len must be specified'
-    salt = salt or token_bytes(salt_len)
-    pass_hash = blake2b(data.encode(), key=key.encode(), salt=salt).digest()
-
+    salt = salt or token_bytes(config.SALT_LEN)
+    print('gen hash', salt)
+    pass_hash = blake2b(password.encode(), key=config.PASS_KEY.encode(), salt=salt).digest()
+    print('gen hash', pass_hash)
     return pass_hash, salt
 
 def generate_access_token(config, claims):
     """Generates JWT access token"""
+    
     token = jwt.encode(
         {
             'iss': config.BACKEND_NAME,
