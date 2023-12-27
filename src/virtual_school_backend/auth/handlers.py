@@ -1,8 +1,14 @@
+from datetime import (
+    datetime as dt,
+    timezone as tz,
+)
+
 from aiohttp.web import (
     View,
     Response,
     json_response,
     HTTPBadRequest,
+    HTTPUnauthorized,
 )
 import jwt
 
@@ -57,6 +63,14 @@ UPDATE_LOGIN = """
     UPDATE login
         SET user_id = %s WHERE id = %s;
 """
+SELECT_TOKENS = """
+    SELECT login_id, used FROM tokens
+        WHERE jti = %s;
+"""
+UPDATE_TOKENS = """
+    UPDATE tokens
+        SET used = false WHERE jti = %s;
+"""
 
 
 class LoginHandler(View):
@@ -87,7 +101,7 @@ class LoginHandler(View):
                     algorithms=config.TOKEN_ALG,
                 )
 
-                refresh_token = generate_refresh_token(config)
+                refresh_token = generate_refresh_token(config, {'sub': role})
                 refresh_payload = jwt.decode(
                     refresh_token, config.TOKEN_KEY,
                     algorithms=config.TOKEN_ALG,
@@ -123,9 +137,82 @@ class LoginHandler(View):
         return response
 
 class RefreshHandler(View):
-    @validate_json_request(REFRESH_SCHEME)
-    async def post(self, json_data):
-        return Response(text='refresh')
+    async def get(self):
+        pg_pool = self.request.app[ROOT_APP][PG_POOL]
+        config = self.request.app[ROOT_APP][CONFIG]
+
+        if not (refresh_token := self.request.cookies.get('__Secure-refresh-token')):
+            raise HTTPUnauthorized(reason='the refresh token is missing in request')
+        
+        try:
+            refresh_payload = jwt.decode(
+                refresh_token, config.TOKEN_KEY,
+                algorithms=config.TOKEN_ALG,
+            )
+        except ExpiredSignatureError as err:
+            raise HTTPUnauthorized(reason='the refresh token has expired')
+        
+        async with pg_pool.connection() as conn:
+            async with conn.cursor() as acur:
+
+                await acur.execute(SELECT_TOKENS, (refresh_payload['jti'],))
+                if (result := await acur.fetchone()):
+                    login_id, token_used = result
+                else:
+                    raise HTTPUnauthorized(reason='invalid token')
+                
+                if token_used:
+                    raise HTTPUnauthorized(reason='the token was used')
+                
+                await acur.execute(UPDATE_TOKENS, (refresh_payload['jti'],))
+
+                new_refresh_token = generate_refresh_token(
+                    config, 
+                    {
+                        'sub': refresh_payload['sub'],
+                        'exp': refresh_payload['exp'],
+                    }
+                )
+                new_refresh_payload = jwt.decode(
+                    new_refresh_token, config.TOKEN_KEY,
+                    algorithms=config.TOKEN_ALG,
+                )
+
+                new_access_token = generate_access_token(
+                    config, {'sub': refresh_payload['sub']},
+                )
+                new_access_payload = jwt.decode(
+                    new_access_token, config.TOKEN_KEY,
+                    algorithms=config.TOKEN_ALG,
+                )
+
+                await acur.execute(
+                    INSERT_TOKENS,
+                    (
+                        login_id,
+                        new_refresh_token,
+                        new_refresh_payload['jti'],
+                        new_refresh_payload['exp'],
+                    ),
+                )
+
+        expires_in = round(new_access_payload['exp'] - new_access_payload['iat'])
+        response = json_response(
+            {
+                'token_type': 'Bearer',
+                'access_token': new_access_token,
+                'expires_in': expires_in,
+                'expires': round(new_refresh_payload['exp']),
+            }
+        )
+        response.set_cookie(
+            '__Secure-refresh-token', new_refresh_token,
+            path='/auth/refresh', httponly=True,
+            secure=True, samesite='Strict',
+            max_age=round(new_refresh_payload['exp'] - new_refresh_payload['iat']),
+        )
+
+        return response
 
 
 class RegistrationHandler(View):
@@ -186,8 +273,3 @@ class RegistrationHandler(View):
 class LogoutHandler(View):
     async def get(self):
         return Response(text='logout')
-
-
-class WhoamiHandler(View):
-    async def get(self):
-        return Response(text='whoami')

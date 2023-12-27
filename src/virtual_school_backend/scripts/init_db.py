@@ -32,6 +32,7 @@ CREATE_TOKENS_TABLE = """
     CREATE TABLE tokens (
         login_id bigserial,
         token text NOT NULL,
+        used boolean NOT NULL DEFAULT false,
         jti text NOT NULL,
         exp numeric( 12 ) NOT NULL,
 

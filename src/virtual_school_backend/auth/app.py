@@ -4,7 +4,6 @@ from .handlers import (
     RegistrationHandler,
     RefreshHandler,
     LogoutHandler,
-    WhoamiHandler,
 )
 
 
@@ -14,5 +13,4 @@ class AuthApp(SubApp):
         ('/registration', RegistrationHandler),
         ('/refresh', RefreshHandler),
         ('/logout', LogoutHandler),
-        ('/whoami', WhoamiHandler),
     ]
