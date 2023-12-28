@@ -10,5 +10,4 @@ __pycache__/
 .env
 
 # temporary files
-test.py
-cook*
+test*

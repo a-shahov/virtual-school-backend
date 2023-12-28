@@ -12,7 +12,10 @@ from aiohttp.web import (
     HTTPUnauthorized,
 )
 import jwt
-from jwt import ExpiredSignatureError
+from jwt import (
+    ExpiredSignatureError,
+    InvalidSignatureError,
+)
 
 from virtual_school_backend import (
     ROOT_APP,
@@ -59,7 +62,7 @@ INSERT_USER = """
 """
 SELECT_USER_BY_ID = """
     SELECT id FROM user_account
-        WHERE login_id = %s;
+        WHERE login_id = %s
 """
 UPDATE_LOGIN = """
     UPDATE login
@@ -153,7 +156,9 @@ class RefreshHandler(View):
                 algorithms=config.TOKEN_ALG,
             )
         except ExpiredSignatureError as err:
-            raise HTTPUnauthorized(reason='the refresh token has expired')
+            raise HTTPForbidden(reason='the refresh token has expired')
+        except InvalidSignatureError:
+            raise HTTPUnauthorized(reason='invalid refresh token')
         
         async with pg_pool.connection() as conn:
             async with conn.cursor() as acur:
@@ -161,11 +166,11 @@ class RefreshHandler(View):
                 await acur.execute(SELECT_TOKENS, (refresh_payload['jti'],))
                 if (result := await acur.fetchone()):
                     login_id, token_used = result
-                else:
+                else:  # TODO: need use more jwt options REFACTORING!!!
                     raise HTTPUnauthorized(reason='invalid token')
                 
                 if token_used:
-                    raise HTTPUnauthorized(reason='the token was used')
+                    raise HTTPForbidden(reason='the token was used')
                 
                 await acur.execute(UPDATE_TOKENS, (refresh_payload['jti'],))
 

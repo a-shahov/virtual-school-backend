@@ -10,7 +10,7 @@ from aiohttp.web import (
     TCPSite,
     run_app,
 )
-
+# TODO: разобраться с импртами
 from virtual_school_backend.auth import AuthApp
 from virtual_school_backend.user import UserApp
 from virtual_school_backend.mainpage import MainApp

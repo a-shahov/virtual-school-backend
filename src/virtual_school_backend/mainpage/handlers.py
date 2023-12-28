@@ -3,20 +3,12 @@ from aiohttp.web import (
     Response,
 ) 
 
-from virtual_school_backend import (
-    ROOT_APP,
-    CONFIG,
-    PG_POOL,
-)
+from virtual_school_backend import set_permission
 
 
 class InfoHandler(View):
+    @set_permission(['admin'])
     async def get(self):
-        async with self.request.app[ROOT_APP][PG_POOL].connection() as conn:
-            async with conn.cursor() as acur:
-                await acur.execute('SELECT * FROM login;')
-                print(await acur.fetchone())
-
         return Response(text='info get')
     
     async def put(self):
@@ -24,6 +16,7 @@ class InfoHandler(View):
 
 
 class NewsHandler(View):
+    @set_permission(['user'])
     async def get(self):
         return Response(text='news get')
     
