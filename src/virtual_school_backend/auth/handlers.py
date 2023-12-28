@@ -8,9 +8,11 @@ from aiohttp.web import (
     Response,
     json_response,
     HTTPBadRequest,
+    HTTPOk,
     HTTPUnauthorized,
 )
 import jwt
+from jwt import ExpiredSignatureError
 
 from virtual_school_backend import (
     ROOT_APP,
@@ -69,9 +71,9 @@ SELECT_TOKENS = """
 """
 UPDATE_TOKENS = """
     UPDATE tokens
-        SET used = false WHERE jti = %s;
+        SET used = true WHERE jti = %s;
 """
-
+dir(__file__)
 
 class LoginHandler(View):
 
@@ -130,7 +132,7 @@ class LoginHandler(View):
         )
         response.set_cookie(
             '__Secure-refresh-token', refresh_token,
-            path='/auth/refresh', httponly=True,
+            path='/auth/', httponly=True,
             secure=True, samesite='Strict',
             max_age=round(refresh_payload['exp'] - refresh_payload['iat']),
         )
@@ -141,6 +143,7 @@ class RefreshHandler(View):
         pg_pool = self.request.app[ROOT_APP][PG_POOL]
         config = self.request.app[ROOT_APP][CONFIG]
 
+        # TODO: move to middleware
         if not (refresh_token := self.request.cookies.get('__Secure-refresh-token')):
             raise HTTPUnauthorized(reason='the refresh token is missing in request')
         
@@ -207,7 +210,7 @@ class RefreshHandler(View):
         )
         response.set_cookie(
             '__Secure-refresh-token', new_refresh_token,
-            path='/auth/refresh', httponly=True,
+            path='/auth/', httponly=True,
             secure=True, samesite='Strict',
             max_age=round(new_refresh_payload['exp'] - new_refresh_payload['iat']),
         )
@@ -272,4 +275,23 @@ class RegistrationHandler(View):
 
 class LogoutHandler(View):
     async def get(self):
-        return Response(text='logout')
+        pg_pool = self.request.app[ROOT_APP][PG_POOL]
+        config = self.request.app[ROOT_APP][CONFIG]
+
+        if not (refresh_token := self.request.cookies.get('__Secure-refresh-token')):
+            raise HTTPOk(reason='the refresh token is missing in request')
+        
+        try:
+            refresh_payload = jwt.decode(
+                refresh_token, config.TOKEN_KEY,
+                algorithms=config.TOKEN_ALG,
+            )
+        except ExpiredSignatureError:
+            raise HTTPOk(reason='the refresh token has expired')
+
+        async with pg_pool.connection() as conn:
+            async with conn.cursor() as acur:
+
+                await acur.execute(UPDATE_TOKENS, (refresh_payload['jti'],))
+
+        return Response()

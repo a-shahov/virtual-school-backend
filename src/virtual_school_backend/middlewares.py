@@ -1,10 +1,11 @@
-from aiohttp.web import middlewares
+from aiohttp.web import middleware
 
 
-@middlewares
+@middleware
 async def error_middleware(request, handler):
     pass
 
-@middlewares
+@middleware
 async def auth_middleware(request, handler):
-    pass
+    resp = await handler(request)
+    return resp

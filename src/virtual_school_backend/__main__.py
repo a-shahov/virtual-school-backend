@@ -15,6 +15,7 @@ from virtual_school_backend.auth import AuthApp
 from virtual_school_backend.user import UserApp
 from virtual_school_backend.mainpage import MainApp
 from virtual_school_backend.config import Config
+from virtual_school_backend.middlewares import auth_middleware
 from virtual_school_backend.appkeys import (
     ROOT_APP,
     CONFIG,
@@ -39,7 +40,7 @@ class Backend(Application):
     #  TODO: add runner.cleanup
 
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        super().__init__(*args, middlewares=[auth_middleware], **kwargs)
         
         self[CONFIG] = Config
         self._add_subapps()

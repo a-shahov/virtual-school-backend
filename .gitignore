@@ -11,4 +11,4 @@ __pycache__/
 
 # temporary files
 test.py
-cook
+cook*
