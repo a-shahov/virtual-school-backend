@@ -22,33 +22,35 @@ def generate_hash(password, config, *, salt=None):
 def generate_access_token(config, claims):
     """Generates JWT access token"""
     
+    payload = {
+        'iss': config.BACKEND_NAME,
+        'sub': claims['sub'],
+        'iat': (timestamp := dt.now(tz=tz.utc).timestamp()),
+        'exp': timestamp + config.ACCESS_TOKEN_EXP,
+    }
     token = jwt.encode(
-        {
-            'iss': config.BACKEND_NAME,
-            'sub': claims['sub'],
-            'iat': (timestamp := dt.now(tz=tz.utc).timestamp()),
-            'exp': timestamp + config.ACCESS_TOKEN_EXP,
-        },
+        payload,
         config.TOKEN_KEY,
         algorithm=config.TOKEN_ALG,
     )
     
-    return token
+    return token, payload
 
 def generate_refresh_token(config, claims):
     """Generates JWT refresh token."""
 
+    payload = {
+        'iss': config.BACKEND_NAME,
+        'sub': claims['sub'],
+        'jti': token_urlsafe(config.JTI_LEN),
+        'iat': (timestamp := dt.now(tz=tz.utc).timestamp()),
+        'exp': claims.get('exp', timestamp + config.REFRESH_TOKEN_EXP),
+    }
     token = jwt.encode(
-        {
-            'iss': config.BACKEND_NAME,
-            'sub': claims['sub'],
-            'jti': token_urlsafe(config.JTI_LEN),
-            'iat': (timestamp := dt.now(tz=tz.utc).timestamp()),
-            'exp': claims.get('exp', timestamp + config.REFRESH_TOKEN_EXP),
-        },
+        payload,
         config.TOKEN_KEY,
         algorithm=config.TOKEN_ALG,
     )
     
-    return token
+    return token, payload
 

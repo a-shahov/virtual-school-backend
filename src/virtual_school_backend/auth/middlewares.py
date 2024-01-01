@@ -16,13 +16,14 @@ from virtual_school_backend.appkeys import (
 
 @middleware
 async def refresh_middleware(request, handler):
-    refresh_endpoints = ('/auth/refresh', '/auth/logout')    
-    if request.url.path not in refresh_endpoints:
+    if request.url.path == '/auth/login':
         return await handler(request)
     
     config = request.app[ROOT_APP][CONFIG]
     
     if not (refresh_token := request.cookies.get('__Secure-refresh-token')):
+        if request.url.path == '/auth/registration':
+            return await handler(request)
         raise HTTPUnauthorized(reason='the refresh token is missing in request')
     
     try:

@@ -76,7 +76,7 @@ UPDATE_TOKENS = """
     UPDATE tokens
         SET used = true WHERE jti = %s;
 """
-dir(__file__)
+
 
 class LoginHandler(View):
 
@@ -100,21 +100,8 @@ class LoginHandler(View):
                 if pass_hash != pass_hash_db:
                     raise HTTPBadRequest(reason='wrong password')
                                     
-                access_token = generate_access_token(config, {'sub': role})
-                access_payload = jwt.decode(
-                    access_token, config.TOKEN_KEY,
-                    algorithms=config.TOKEN_ALG,
-                    require=config.ACCESS_TOKEN_CLAIMS,
-                    issuer=config.BACKEND_NAME,
-                )
-
-                refresh_token = generate_refresh_token(config, {'sub': role})
-                refresh_payload = jwt.decode(
-                    refresh_token, config.TOKEN_KEY,
-                    algorithms=config.TOKEN_ALG,
-                    require=config.REFRESH_TOKEN_CLAIMS,
-                    issuer=config.BACKEND_NAME,
-                )
+                access_token, access_payload = generate_access_token(config, {'sub': role})
+                refresh_token, refresh_payload = generate_refresh_token(config, {'sub': role})
 
                 await acur.execute(
                     INSERT_TOKENS,
@@ -133,7 +120,7 @@ class LoginHandler(View):
             {
                 'token_type': 'Bearer',
                 'access_token': access_token,
-                #'role': ...,
+                'role': access_payload['sub'],
                 'expires_in': expires_in,
                 'expires': round(refresh_payload['exp']),
             }
@@ -166,24 +153,15 @@ class RefreshHandler(View):
                 
                 await acur.execute(UPDATE_TOKENS, (refresh_payload['jti'],))
 
-                new_refresh_token = generate_refresh_token(
+                new_refresh_token, new_refresh_payload = generate_refresh_token(
                     config, 
                     {
                         'sub': refresh_payload['sub'],
                         'exp': refresh_payload['exp'],
                     }
                 )
-                new_refresh_payload = jwt.decode(
-                    new_refresh_token, config.TOKEN_KEY,
-                    algorithms=config.TOKEN_ALG,
-                )
-
-                new_access_token = generate_access_token(
+                new_access_token, new_access_payload = generate_access_token(
                     config, {'sub': refresh_payload['sub']},
-                )
-                new_access_payload = jwt.decode(
-                    new_access_token, config.TOKEN_KEY,
-                    algorithms=config.TOKEN_ALG,
                 )
 
                 await acur.execute(
@@ -201,7 +179,7 @@ class RefreshHandler(View):
             {
                 'token_type': 'Bearer',
                 'access_token': new_access_token,
-                #'role': ...,
+                'role': new_access_payload['sub'],
                 'expires_in': expires_in,
                 'expires': round(new_refresh_payload['exp']),
             }
@@ -280,5 +258,18 @@ class LogoutHandler(View):
             async with conn.cursor() as acur:
 
                 await acur.execute(UPDATE_TOKENS, (refresh_payload['jti'],))
+        
+        response = Response()
+        response.set_cookie(
+            '__Secure-refresh-token', '', path='/auth/', 
+            max_age=0, httponly=True, secure=True, 
+            samesite='Strict',
+        )
 
-        return Response()
+        return response
+
+
+class WhoamiHandler(View):
+    async def get(self):
+        pg_pool = self.request.app[ROOT_APP][PG_POOL]
+        # TODO: SQL query from 2 tables!!
