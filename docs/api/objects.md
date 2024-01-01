@@ -12,7 +12,7 @@
 + __[registration](#registration)__
 + __[main](#main)__
 + __[course](#course)__
-+ __[entity](#entity)__
++ __[token](#token)__
 + __[user](#user)__
 + __[misc](#misc)__
 + __[notification](#notification)__
@@ -223,48 +223,42 @@ __Examples:__<br>
 
 ---
 
-### __entity__
+### __token__
 
 __Description:__<br>
-_Этот объект используется для определения конкретной сущности с правами на сайте_
+_Этот объект используется для отправки access token на клиента, в случае успешной аутентификации_
 
 ```json
 {
-    id: int,
+    token_type: string,
+    access_token: string,
     role: string,
-    date: string,
+    expires_in: int,
+    expires: int,
 }
 ```
 __Description of attributes:__<br>
 
-+ __id__ - уникальный числовой идентификатор, который генерируется на стороне бекенда при создании объекта сущности. __id__ у разных ролей могу пересекаться. __id__ у этого объекта и объекта __[user](#user)__ будут совпадать в случае когда __role__ = user
++ __token_type__ - тип токена всегда должен быть _"Bearer"_
++ __access_token__ - jwt access token, используется для получения доступа к ресурсам, нужно выставлять в заголовок запроса _"Authorization: Bearer \<access token\>"_
 + __role__ - этот атрибут, служит цели авторизации определённого пользователя, то есть определяет какой спектр API доступен под данным аккаунтом<br>
 _available values:_
-    + anonym - любой не аутентифицированный пользователь с __id__ = 0
-    + user - пользователь, который зарегистрирован как ученик
-    + admin - административный аккаунт, на данный момент существует всего один с __id__ = 1
-    + teacher - аккаунт учителя (модератора), создаётся через административный аккаунт
-+ __date__ - дата создания данной сущности
+    + _anonym_ - любой не аутентифицированный пользователь (псевдосущность в ответе она не приходит)
+    + _user_ - пользователь, который зарегистрирован как ученик
+    + _admin_ - административный аккаунт
+    + _teacher_ - аккаунт учителя (модератора), создаётся через административный аккаунт
++ __expires_in__ - время жизни токена доступа в секундах
++ __expires__ - временная метка истечения _refresh token_ в формате _unix epoch time_
 
 __Examples:__<br>
 
 ```json
 {
-    id: 0,
-    role: "anonym",
-    date: "..."
-}
-
-{
-    id: 1,
-    role: "admin",
-    date: "..."
-}
-
-{
-    id: 15,
-    role: "user",
-    date: "..."
+    "token_type": "Bearer",
+    "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ2aXJ0dWFsLXNjaG9vbC1iYWNrZW5kIiwic3ViIjoidXNlciIsImlhdCI6MTcwNDA3ODE1NS4xMzUxNDEsImV4cCI6MTcwNDA3ODUxNS4xMzUxNDF9.5ydbPEfJZoLGd30k18rC4jY1rfHFnCUTfS4EOyTa7Mw",
+    "role": "user",
+    "expires_in": 360,
+    "expires": 1706670155
 }
 ```
 
