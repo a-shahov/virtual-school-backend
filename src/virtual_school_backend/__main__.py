@@ -1,3 +1,4 @@
+# TODO: переделать импорты
 import logging
 import asyncio
 import sys
@@ -10,7 +11,7 @@ from aiohttp.web import (
     TCPSite,
     run_app,
 )
-# TODO: разобраться с импртами
+
 from virtual_school_backend.auth import AuthApp
 from virtual_school_backend.user import UserApp
 from virtual_school_backend.mainpage import MainApp
@@ -23,7 +24,7 @@ from virtual_school_backend.appkeys import (
 )
 
 
-class Backend(Application):
+class Backend:
     """
     В миддлваре auth + декораторы на каждый хендлер с доступом
     декораторы хендлеров для валидации запросов
@@ -38,37 +39,43 @@ class Backend(Application):
     #  TODO: add logging
     #  TODO: add error handling
     #  TODO: add runner.cleanup
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, middlewares=[auth_middleware], **kwargs)
-        
-        self[CONFIG] = Config
-        self._add_subapps()
-        self.cleanup_ctx.append(self.pg_pool)
+    def __init__(self, *, config, middlewares, subapps):
+        self.app = Application()
+        self.middlewares = middlewares
+        self._add_subapps(subapps)
+        self.app[CONFIG] = config
+        self.app.cleanup_ctx.append(self.pg_pool)
     
-    def _add_subapps(self):
-        subapps = (
-            ('/auth/', AuthApp()),
-            ('/user/', UserApp()),
-            ('/main/', MainApp()),
-        )
-
+    def _add_subapps(self, subapps):
         for path, subapp in subapps:
-            subapp[ROOT_APP] = self
-            self.add_subapp(path, subapp)
-
-    async def pg_pool(self, unused):
-        async with AsyncConnectionPool(self[CONFIG].DSN, open=False) as pool:
-            self[PG_POOL] = pool
+            subapp[ROOT_APP] = self.app
+            self.app.add_subapp(path, subapp)
+    
+    async def pg_pool(self, app):
+        async with AsyncConnectionPool(app[CONFIG].DSN, open=False) as pool:
+            app[PG_POOL] = pool
             yield
+
+    def run(self):
+        run_app(
+            self.app, port=self.app[CONFIG].PORT,
+            host=self.app[CONFIG].HOST,    
+        )
 
 
 def main():
     #  TODO: add setup configuration
     #  TODO: add argparse
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
-    #  TODO: move to config
-    run_app(Backend(), port=8000, host='127.0.0.1')
+    Backend(
+        config=Config,
+        middlewares=[auth_middleware],
+        subapps=[
+            ('/auth/', AuthApp().app),
+            ('/user/', UserApp().app),
+            ('/main/', MainApp().app),
+        ],
+    ).run()
 
 
 if __name__ == '__main__':

@@ -3,11 +3,16 @@ title = """\
         this file contains only inner static confuguration parameters. \
         """
 
+[backend]
+host = "127.0.0.1"
+
 [crypt_password]
 salt_len = 8  # from 0 to 16 bytes for blake2b
 
 [jwt_token]
 token_algorithm = "HS256"
 access_token_exp = 360  # lifetime in seconds
+access_token_claims = [ "iat", "exp", "sub", "iss" ]
 refresh_token_exp = 2592000  # 2592000 is 1 month
+refresh_token_claims = [ "iat", "exp", "iss", "jti", "sub" ]
 jti_len = 32

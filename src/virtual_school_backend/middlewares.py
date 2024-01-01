@@ -9,15 +9,12 @@ from jwt import (
     InvalidSignatureError,
 )
 
-from virtual_school_backend.appkeys import (
-    CONFIG,
-    ROOT_APP,
-)
+from virtual_school_backend.appkeys import CONFIG
 
 
 def set_permission(permisions):
     valid_perms = ('admin', 'teacher', 'user')
-    assert all((perm in valid_perms for perm in permisions)), f'this {permisions}, are not valid'
+    assert all((perm in valid_perms for perm in permisions)), f'this {permisions=}, are not valid'
 
     def wrapper(func):
         func.permissions = permisions
@@ -48,6 +45,8 @@ async def auth_middleware(request, handler):
         access_payload = jwt.decode(
             access_token, config.TOKEN_KEY,
             algorithms=config.TOKEN_ALG, 
+            require=config.ACCESS_TOKEN_CLAIMS,
+            issuer=config.BACKEND_NAME,
         )
     except ExpiredSignatureError:
         raise HTTPForbidden(reason='the access token has expired')

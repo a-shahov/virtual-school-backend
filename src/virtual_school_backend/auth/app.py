@@ -5,6 +5,7 @@ from .handlers import (
     RefreshHandler,
     LogoutHandler,
 )
+from .middlewares import refresh_middleware
 
 
 class AuthApp(SubApp):
@@ -14,3 +15,4 @@ class AuthApp(SubApp):
         ('/refresh', RefreshHandler),
         ('/logout', LogoutHandler),
     ]
+    Middlewares = [refresh_middleware]

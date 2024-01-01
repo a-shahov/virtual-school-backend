@@ -8,8 +8,8 @@ from aiohttp.web import (
     Response,
     json_response,
     HTTPBadRequest,
-    HTTPOk,
     HTTPUnauthorized,
+    HTTPForbidden,
 )
 import jwt
 from jwt import (
@@ -104,12 +104,16 @@ class LoginHandler(View):
                 access_payload = jwt.decode(
                     access_token, config.TOKEN_KEY,
                     algorithms=config.TOKEN_ALG,
+                    require=config.ACCESS_TOKEN_CLAIMS,
+                    issuer=config.BACKEND_NAME,
                 )
 
                 refresh_token = generate_refresh_token(config, {'sub': role})
                 refresh_payload = jwt.decode(
                     refresh_token, config.TOKEN_KEY,
                     algorithms=config.TOKEN_ALG,
+                    require=config.REFRESH_TOKEN_CLAIMS,
+                    issuer=config.BACKEND_NAME,
                 )
 
                 await acur.execute(
@@ -129,6 +133,7 @@ class LoginHandler(View):
             {
                 'token_type': 'Bearer',
                 'access_token': access_token,
+                #'role': ...,
                 'expires_in': expires_in,
                 'expires': round(refresh_payload['exp']),
             }
@@ -145,20 +150,7 @@ class RefreshHandler(View):
     async def get(self):
         pg_pool = self.request.app[ROOT_APP][PG_POOL]
         config = self.request.app[ROOT_APP][CONFIG]
-
-        # TODO: move to middleware
-        if not (refresh_token := self.request.cookies.get('__Secure-refresh-token')):
-            raise HTTPUnauthorized(reason='the refresh token is missing in request')
-        
-        try:
-            refresh_payload = jwt.decode(
-                refresh_token, config.TOKEN_KEY,
-                algorithms=config.TOKEN_ALG,
-            )
-        except ExpiredSignatureError as err:
-            raise HTTPForbidden(reason='the refresh token has expired')
-        except InvalidSignatureError:
-            raise HTTPUnauthorized(reason='invalid refresh token')
+        refresh_payload = self.request['refresh_payload']
         
         async with pg_pool.connection() as conn:
             async with conn.cursor() as acur:
@@ -166,8 +158,8 @@ class RefreshHandler(View):
                 await acur.execute(SELECT_TOKENS, (refresh_payload['jti'],))
                 if (result := await acur.fetchone()):
                     login_id, token_used = result
-                else:  # TODO: need use more jwt options REFACTORING!!!
-                    raise HTTPUnauthorized(reason='invalid token')
+                else:
+                    raise HTTPUnauthorized(reason='token not in database')
                 
                 if token_used:
                     raise HTTPForbidden(reason='the token was used')
@@ -209,6 +201,7 @@ class RefreshHandler(View):
             {
                 'token_type': 'Bearer',
                 'access_token': new_access_token,
+                #'role': ...,
                 'expires_in': expires_in,
                 'expires': round(new_refresh_payload['exp']),
             }
@@ -281,18 +274,7 @@ class RegistrationHandler(View):
 class LogoutHandler(View):
     async def get(self):
         pg_pool = self.request.app[ROOT_APP][PG_POOL]
-        config = self.request.app[ROOT_APP][CONFIG]
-
-        if not (refresh_token := self.request.cookies.get('__Secure-refresh-token')):
-            raise HTTPOk(reason='the refresh token is missing in request')
-        
-        try:
-            refresh_payload = jwt.decode(
-                refresh_token, config.TOKEN_KEY,
-                algorithms=config.TOKEN_ALG,
-            )
-        except ExpiredSignatureError:
-            raise HTTPOk(reason='the refresh token has expired')
+        refresh_payload = self.request['refresh_payload']
 
         async with pg_pool.connection() as conn:
             async with conn.cursor() as acur:

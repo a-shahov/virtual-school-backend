@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 
 
 # Load .env file in environment
-load_dotenv()
+load_dotenv(Path(__file__).parents[1] / '.env')
 
 # Load static configuration file
 with Path(__file__).with_name('config.toml').open('rb') as toml_f:   
@@ -20,6 +20,8 @@ with Path(__file__).parents[3].joinpath('pyproject.toml').open('rb') as toml_f:
 class Config:
     """Class for storing full backend configuration"""
     BACKEND_NAME = pyproj_toml['project']['name']
+    HOST = conf_toml['backend']['host']
+    PORT = int(os.getenv('PORT'))
 
     DSN = (
         f'dbname={os.getenv("PG_NAME")} '
@@ -36,4 +38,6 @@ class Config:
     TOKEN_ALG = conf_toml['jwt_token']['token_algorithm']
     JTI_LEN = conf_toml['jwt_token']['jti_len']
     ACCESS_TOKEN_EXP = conf_toml['jwt_token']['access_token_exp']
+    ACCESS_TOKEN_CLAIMS = conf_toml['jwt_token']['access_token_claims']
     REFRESH_TOKEN_EXP = conf_toml['jwt_token']['refresh_token_exp']
+    REFRESH_TOKEN_CLAIMS = conf_toml['jwt_token']['refresh_token_claims']
