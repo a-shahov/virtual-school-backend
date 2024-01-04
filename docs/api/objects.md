@@ -143,21 +143,23 @@ _Этот объект используется при регистрации н
     email: string,
     password: string,
     name: string,
-    secondName: string,
+    secondname: string,
     patronymic: string,
+    birthdate: string,
     phone: string,
     class: int,
 }
 ```
 __Description of attributes:__<br>
 
-+ __email__ - почта, ограничение 64 символа
-+ __password__ - пароль, минимум 8 символов (строчные, прописные, цифры)
-+ __name__ - имя пользователя, ограничение 24 символа
++ __email__ - Почта, ограничение 64 символа
++ __password__ - Пароль, минимум 8 символов. Должен содержать строчные, прописные ascii символы и цифры, также допустимыми являются специальные символы
++ __name__ - Имя пользователя, ограничение 24 символа
 + __secondName__ - фамилия, ограничение 24 символа
 + __patronymic__ - Отчество, ограничение 24 символа
++ __birthdate__ - Дата рождения (YYYY-MM-DD)
 + __phone__ - Телефон
-+ __class__ - класс
++ __class__ - Класс [1-11]
 
 __Examples:__<br>
 
@@ -168,6 +170,7 @@ __Examples:__<br>
     name: "Андрей",
     secondName: "Шахов",
     patronymic: "Владимирович",
+    birthdate: "2000-11-22",
     phone: "89993332211"
     class: 1,
 }

@@ -1,4 +1,3 @@
-# TODO: переделать импорты
 import logging
 import asyncio
 import sys
@@ -12,16 +11,16 @@ from aiohttp.web import (
     run_app,
 )
 
-from virtual_school_backend.auth import AuthApp
-from virtual_school_backend.user import UserApp
-from virtual_school_backend.mainpage import MainApp
-from virtual_school_backend.config import Config
-from virtual_school_backend.middlewares import auth_middleware
-from virtual_school_backend.appkeys import (
+from virtual_school_backend import (
+    auth_middleware,
     ROOT_APP,
     CONFIG,
     PG_POOL,
 )
+from virtual_school_backend.auth import AuthApp
+from virtual_school_backend.user import UserApp
+from virtual_school_backend.mainpage import MainApp
+from virtual_school_backend.config import Config
 
 
 class Backend:
@@ -59,7 +58,7 @@ class Backend:
     def run(self):
         run_app(
             self.app, port=self.app[CONFIG].PORT,
-            host=self.app[CONFIG].HOST,    
+            host=self.app[CONFIG].HOST,
         )
 
 

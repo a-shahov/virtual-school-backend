@@ -60,4 +60,7 @@ async def auth_middleware(request, handler):
 
 @middleware
 async def error_middleware(request, handler):
+    # TODO: processing HTTP exceptions (aiohttp.web.HTTPException)
+    # TODO: processing validation exceptions (ExceptionGroup)
+    # ExceptionGroup with jsonschema.ValidationError
     pass

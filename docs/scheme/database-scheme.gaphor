@@ -162,6 +162,7 @@ existing classes or even new classes with specific responsibilities.</val>
 <ref refid="8f049435-8cee-11ee-832d-4d3c4d4f3f47"/>
 <ref refid="300c97cd-8cef-11ee-a592-4d3c4d4f3f47"/>
 <ref refid="40b0e6e7-8cef-11ee-9d47-4d3c4d4f3f47"/>
+<ref refid="e3f60675-a966-11ee-9ac9-d19db0091a01"/>
 <ref refid="c31cfd4d-8d00-11ee-9ac5-4d3c4d4f3f47"/>
 <ref refid="3ed78785-8d01-11ee-b2c1-4d3c4d4f3f47"/>
 <ref refid="aba6d527-8ed1-11ee-ac3f-2fe9fe6f75c5"/>
@@ -968,7 +969,7 @@ existing classes or even new classes with specific responsibilities.</val>
 <val>(1.0, 0.0, 0.0, 1.0, -524.0382273707921, 746.9321481209516)</val>
 </matrix>
 <points>
-<val>[(-126.26406481046297, 97.662462473902), (-64.99213393258708, 0.0)]</val>
+<val>[(-126.26406481046297, 97.9076648362884), (-64.99213393258708, 0.0)]</val>
 </points>
 <head-connection>
 <ref refid="0c06753a-8d12-11ee-8098-4d3c4d4f3f47"/>
@@ -2324,6 +2325,17 @@ existing classes or even new classes with specific responsibilities.</val>
 </name>
 <typeValue>
 <val>boolean</val>
+</typeValue>
+</Property>
+<Property id="e3f60675-a966-11ee-9ac9-d19db0091a01">
+<class_>
+<ref refid="e11c2d0e-8cea-11ee-8a6e-4d3c4d4f3f47"/>
+</class_>
+<name>
+<val>birthdate</val>
+</name>
+<typeValue>
+<val>date</val>
 </typeValue>
 </Property>
 </gaphor>

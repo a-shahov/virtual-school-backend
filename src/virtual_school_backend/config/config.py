@@ -1,16 +1,13 @@
 import os
 import tomllib
 from pathlib import Path
+import string
 
 from dotenv import load_dotenv
 
 
 # Load .env file in environment
 load_dotenv(Path(__file__).parents[1] / '.env')
-
-# Load static configuration file
-with Path(__file__).with_name('config.toml').open('rb') as toml_f:   
-    conf_toml = tomllib.load(toml_f)
 
 # Load pyproject.toml
 with Path(__file__).parents[3].joinpath('pyproject.toml').open('rb') as toml_f:
@@ -20,7 +17,7 @@ with Path(__file__).parents[3].joinpath('pyproject.toml').open('rb') as toml_f:
 class Config:
     """Class for storing full backend configuration"""
     BACKEND_NAME = pyproj_toml['project']['name']
-    HOST = conf_toml['backend']['host']
+    HOST = '127.0.0.1'
     PORT = int(os.getenv('PORT'))
 
     DSN = (
@@ -32,12 +29,24 @@ class Config:
     )
 
     PASS_KEY = os.getenv('BLAKE2_KEY')  # key for generate password hash (blake2b)
-    SALT_LEN = conf_toml['crypt_password']['salt_len']
+    SALT_LEN = 8  # from 0 to 16 bytes for blake2b
+    PASS_MUST_SUBSETS_CHARS = [
+        frozenset(string.ascii_lowercase),
+        frozenset(string.ascii_uppercase),
+        frozenset(string.digits),
+    ]
+    PASS_VALID_CHARS = [
+        *PASS_MUST_SUBSETS_CHARS,
+        frozenset(string.punctuation),
+    ]
+    PASS_FORBID_CHARS = [
+        frozenset(string.whitespace),
+    ]
 
     TOKEN_KEY = os.getenv('TOKEN_KEY')  # key for generate jwt token
-    TOKEN_ALG = conf_toml['jwt_token']['token_algorithm']
-    JTI_LEN = conf_toml['jwt_token']['jti_len']
-    ACCESS_TOKEN_EXP = conf_toml['jwt_token']['access_token_exp']
-    ACCESS_TOKEN_CLAIMS = conf_toml['jwt_token']['access_token_claims']
-    REFRESH_TOKEN_EXP = conf_toml['jwt_token']['refresh_token_exp']
-    REFRESH_TOKEN_CLAIMS = conf_toml['jwt_token']['refresh_token_claims']
+    TOKEN_ALG = 'HS256'
+    JTI_LEN = 32  # JWT ID
+    ACCESS_TOKEN_EXP = 360  # lifetime in seconds
+    ACCESS_TOKEN_CLAIMS = ['iat', 'exp', 'sub', 'iss']
+    REFRESH_TOKEN_EXP = 2592000  # 2592000 is 1 month
+    REFRESH_TOKEN_CLAIMS = ['iat', 'exp', 'iss', 'jti', 'sub']

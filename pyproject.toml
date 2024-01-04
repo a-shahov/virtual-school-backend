@@ -25,6 +25,8 @@ dependencies = [
     "psycopg[binary, pool]",
     "python-dotenv",
     "pyjwt[crypto]",
+    "jsonschema",
+    "py3-validate-email @ git+https://gitea.ksol.io/karolyi/py3-validate-email",
 ]
 
 [project.optional-dependencies]

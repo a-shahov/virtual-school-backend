@@ -23,16 +23,18 @@ from virtual_school_backend import (
     PG_POOL,
     validate_json_request,
 )
+from .validation_schemas import (
+    REGISTRATION_SCHEMA,
+    LOGIN_SCHEME,
+    registration_formatcheck,
+    login_formatcheck,
+)
 from .tools import (
     generate_hash,
     generate_access_token,
     generate_refresh_token,
 )
 
-# TODO: NEED cerberus
-LOGIN_SCHEME = ''
-REFRESH_SCHEME = ''
-REGISTRATION_SCHEME = ''
 
 # TODO: need rewrite all SQL queries
 SELECT_LOGIN_BY_EMAIL = """
@@ -57,8 +59,11 @@ INSERT_LOGIN = """
         VALUES ( %s, %s, %b, %b )
 """
 INSERT_USER = """
-    INSERT INTO user_account ( login_id, state, name, secondname, patronymic, phone, class)
-        VALUES ( %s, %s, %s, %s, %s, %s, %s);
+    INSERT INTO user_account ( 
+        login_id, state, name, secondname, 
+        patronymic, birthdate, phone, class
+        )
+        VALUES ( %s, %s, %s, %s, %s, %s, %s, %s);
 """
 SELECT_USER_BY_ID = """
     SELECT id FROM user_account
@@ -80,7 +85,7 @@ UPDATE_TOKENS = """
 
 class LoginHandler(View):
 
-    @validate_json_request(LOGIN_SCHEME)
+    @validate_json_request(LOGIN_SCHEME, login_formatcheck)
     async def post(self, json_data):
         config = self.request.app[ROOT_APP][CONFIG]
         pg_pool = self.request.app[ROOT_APP][PG_POOL]
@@ -134,6 +139,7 @@ class LoginHandler(View):
         return response
 
 class RefreshHandler(View):
+
     async def get(self):
         pg_pool = self.request.app[ROOT_APP][PG_POOL]
         config = self.request.app[ROOT_APP][CONFIG]
@@ -195,7 +201,8 @@ class RefreshHandler(View):
 
 
 class RegistrationHandler(View):
-    @validate_json_request(REGISTRATION_SCHEME)
+
+    @validate_json_request(REGISTRATION_SCHEMA, registration_formatcheck)
     async def post(self, json_data):
         pg_pool = self.request.app[ROOT_APP][PG_POOL]
         config = self.request.app[ROOT_APP][CONFIG]
@@ -217,6 +224,8 @@ class RegistrationHandler(View):
                     ),
                 )
                 if (result := await acur.fetchone()):
+                    # TODO: dataclasses or pydantic or attrs? for result
+                    # TODO: work with enum?
                     phone, *unused = result
                     if phone == json_data['phone']:
                         raise HTTPBadRequest(reason='phone number already exists')
@@ -237,6 +246,7 @@ class RegistrationHandler(View):
                     json_data['name'],
                     json_data['secondname'],
                     json_data['patronymic'],
+                    json_data['birthdate'],
                     json_data['phone'],
                     json_data['class'],
                 ))
@@ -250,6 +260,7 @@ class RegistrationHandler(View):
 
 
 class LogoutHandler(View):
+
     async def get(self):
         pg_pool = self.request.app[ROOT_APP][PG_POOL]
         refresh_payload = self.request['refresh_payload']
@@ -270,6 +281,7 @@ class LogoutHandler(View):
 
 
 class WhoamiHandler(View):
+
     async def get(self):
         pg_pool = self.request.app[ROOT_APP][PG_POOL]
         # TODO: SQL query from 2 tables!!
