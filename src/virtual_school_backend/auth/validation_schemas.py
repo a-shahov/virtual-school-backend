@@ -14,27 +14,27 @@ registration_formatcheck = FormatChecker()
 login_formatcheck = FormatChecker()
 
 @registration_formatcheck.checks('email', ValidationError)
-def is_valid_email(instanse):
+def is_valid_email(instance):
     return True
 
 @registration_formatcheck.checks('password', ValidationError)
-def is_valid_password(instanse):
-    password_set = frozenset(instanse)
+def is_valid_password(instance):
+    password_set = frozenset(instance)
 
     if password_set & frozenset().union(*Config.PASS_FORBID_CHARS):
-        raise ValidationError('password contains forbidden chars')
+        raise ValidationError(f'{instance} contains forbidden chars')
 
     if not password_set.issubset(frozenset().union(*Config.PASS_VALID_CHARS)):
-        raise ValidationError('password contains unacceptable chars')
+        raise ValidationError(f'{instance} contains unacceptable chars')
 
     for password_subset in Config.PASS_MUST_SUBSETS_CHARS:
         if not password_subset & password_set:
-            raise ValidationError('password is too weak')
+            raise ValidationError(f'{instance} is too weak password')
 
     return True
 
 @login_formatcheck.checks('email', ValidationError)
-def is_valid_email_only_syntax(instanse):
+def is_valid_email_only_syntax(instance):
     return True
 
 REGISTRATION_SCHEMA = {

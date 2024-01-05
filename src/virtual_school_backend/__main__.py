@@ -13,6 +13,7 @@ from aiohttp.web import (
 
 from virtual_school_backend import (
     auth_middleware,
+    error_middleware,
     ROOT_APP,
     CONFIG,
     PG_POOL,
@@ -25,13 +26,9 @@ from virtual_school_backend.config import Config
 
 class Backend:
     """
-    В миддлваре auth + декораторы на каждый хендлер с доступом
-    декораторы хендлеров для валидации запросов
-    в мидлваре обработку ошибок?
     argparse
     background jobs
     setup logging
-    middlewares
     unix socket with aiohttp? for faster work?
     pytest
     """
@@ -39,8 +36,7 @@ class Backend:
     #  TODO: add error handling
     #  TODO: add runner.cleanup
     def __init__(self, *, config, middlewares, subapps):
-        self.app = Application()
-        self.middlewares = middlewares
+        self.app = Application(middlewares=middlewares)
         self._add_subapps(subapps)
         self.app[CONFIG] = config
         self.app.cleanup_ctx.append(self.pg_pool)
@@ -50,7 +46,8 @@ class Backend:
             subapp[ROOT_APP] = self.app
             self.app.add_subapp(path, subapp)
     
-    async def pg_pool(self, app):
+    @staticmethod
+    async def pg_pool(app):
         async with AsyncConnectionPool(app[CONFIG].DSN, open=False) as pool:
             app[PG_POOL] = pool
             yield
@@ -68,7 +65,7 @@ def main():
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
     Backend(
         config=Config,
-        middlewares=[auth_middleware],
+        middlewares=[error_middleware, auth_middleware],
         subapps=[
             ('/auth/', AuthApp().app),
             ('/user/', UserApp().app),

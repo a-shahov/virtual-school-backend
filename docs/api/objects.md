@@ -5,8 +5,8 @@
 
 ---
 
-+ __[error](#error)__
 + __[news](#news)__
++ __[error](#error)__
 + __[oid](#oid)__
 + __[login](#login)__
 + __[registration](#registration)__
@@ -61,16 +61,16 @@ __Examples:__<br>
 ### __error__
 
 __Description:__<br>
-_Этот объект используется для пересылки сообщения об ошибке в случае 400 статус кода_
+_Этот объект используется для пересылки сообщения об ошибке в случае различных ошибок_
 
 ```json
 {
-    err: string,
+    errors: [string],
 }
 ```
 __Description of attributes:__<br>
 
-+ __err__ - сообщение об ошибке (в каком формате то??)
++ __errors__ - массив сообщений об ошибках
 
 __Examples:__<br>
 

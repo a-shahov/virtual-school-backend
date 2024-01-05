@@ -40,7 +40,7 @@ _responses:_<br>
 
 + __POST__ `/auth/registration`<br>
 _description:_ endpoint for registration action<br>
-_permission:_ __anonym__<br>
+_permission:_ __all__<br>
 _request body:_ __[registration](./objects#registration)__<br>
 _responses:_<br>
     + 200 - OK

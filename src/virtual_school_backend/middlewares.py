@@ -1,5 +1,7 @@
 from aiohttp.web import (
+    json_response,
     middleware,
+    HTTPException,
     HTTPForbidden,
     HTTPUnauthorized,
 )
@@ -60,7 +62,19 @@ async def auth_middleware(request, handler):
 
 @middleware
 async def error_middleware(request, handler):
-    # TODO: processing HTTP exceptions (aiohttp.web.HTTPException)
-    # TODO: processing validation exceptions (ExceptionGroup)
-    # ExceptionGroup with jsonschema.ValidationError
-    pass
+    try:
+        response = await handler(request)
+    except HTTPException as err:
+        response = json_response(
+            {'errors': [err.reason]},
+            status=err.status_code,
+        )
+    except ExceptionGroup as err:
+        response = json_response(
+            {'errors': [(exc.cause.message if exc.cause else exc.message) for exc in err.exceptions]},
+            status=400,
+        )
+    except Exception as err:
+        raise err
+
+    return response
