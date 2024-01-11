@@ -25,7 +25,7 @@ from virtual_school_backend import (
 )
 from .validation_schemas import (
     REGISTRATION_SCHEMA,
-    LOGIN_SCHEME,
+    LOGIN_SCHEMA,
     registration_formatcheck,
     login_formatcheck,
 )
@@ -85,7 +85,7 @@ UPDATE_TOKENS = """
 
 class LoginHandler(View):
 
-    @validate_json_request(LOGIN_SCHEME, login_formatcheck)
+    @validate_json_request(LOGIN_SCHEMA, login_formatcheck)
     async def post(self, json_data):
         config = self.request.app[ROOT_APP][CONFIG]
         pg_pool = self.request.app[ROOT_APP][PG_POOL]
@@ -133,7 +133,7 @@ class LoginHandler(View):
         response.set_cookie(
             '__Secure-refresh-token', refresh_token,
             path='/auth/', httponly=True,
-            secure=True, samesite='Strict',
+            secure=True, samesite='None',
             max_age=round(refresh_payload['exp'] - refresh_payload['iat']),
         )
         return response
@@ -193,7 +193,7 @@ class RefreshHandler(View):
         response.set_cookie(
             '__Secure-refresh-token', new_refresh_token,
             path='/auth/', httponly=True,
-            secure=True, samesite='Strict',
+            secure=True, samesite='None',
             max_age=round(new_refresh_payload['exp'] - new_refresh_payload['iat']),
         )
 
@@ -274,7 +274,7 @@ class LogoutHandler(View):
         response.set_cookie(
             '__Secure-refresh-token', '', path='/auth/', 
             max_age=0, httponly=True, secure=True, 
-            samesite='Strict',
+            samesite='None',
         )
 
         return response

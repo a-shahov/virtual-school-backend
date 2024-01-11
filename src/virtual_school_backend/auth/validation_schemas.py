@@ -2,9 +2,9 @@ from jsonschema import (
     FormatChecker,
     ValidationError,
 )
-from validate_email import validate_email
 
 from virtual_school_backend.config import Config
+from .tools import validate_email
 
 
 name_pattern = r'^[а-яА-Я]+$'
@@ -13,12 +13,24 @@ phone_pattern = r'^\+?[0-9]+$'
 registration_formatcheck = FormatChecker()
 login_formatcheck = FormatChecker()
 
+@login_formatcheck.checks('email', ValidationError)
 @registration_formatcheck.checks('email', ValidationError)
 def is_valid_email(instance):
+    if not validate_email(instance):
+        raise ValidationError('the email address has invalid syntax')
     return True
 
 @registration_formatcheck.checks('password', ValidationError)
 def is_valid_password(instance):
+    """
+    regexp for password validation
+    re.compile(r'''
+        ^(?=\S*[a-z]) # ascii lowers
+        (?=\S*[A-Z])  # ascii uppers
+        (?=\S*[\d])   # digits
+        \S{8,}$       # any ascii symbols without whitespace characters
+    ''', re.ASCII | re.VERBOSE)
+    """
     password_set = frozenset(instance)
 
     if password_set & frozenset().union(*Config.PASS_FORBID_CHARS):
@@ -31,10 +43,6 @@ def is_valid_password(instance):
         if not password_subset & password_set:
             raise ValidationError(f'{instance} is too weak password')
 
-    return True
-
-@login_formatcheck.checks('email', ValidationError)
-def is_valid_email_only_syntax(instance):
     return True
 
 REGISTRATION_SCHEMA = {
@@ -87,9 +95,14 @@ REGISTRATION_SCHEMA = {
             'maximum': 11,
         },
     },
+    'required': [
+        'email', 'password', 'name',
+        'secondname', 'patronymic', 'birthdate',
+        'phone', 'class',
+    ],
 }
 
-LOGIN_SCHEME = {
+LOGIN_SCHEMA = {
     'title': 'Login',
     'description': 'Login fields',
     'type': 'object',
@@ -105,4 +118,5 @@ LOGIN_SCHEME = {
             'maxLength': 64,
         },
     },
+    'required': ['email', 'password']
 }

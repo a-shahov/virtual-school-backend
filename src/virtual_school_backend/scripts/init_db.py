@@ -62,10 +62,11 @@ CREATE_USER_ACCOUNT_TABLE = """
     CREATE TABLE user_account (
         id serial,
         login_id integer,
-        state UserState,
+        state UserState NOT NULL,
         name varchar( 24 ) NOT NULL,
         secondname varchar( 24 ) NOT NULL,
-        patronymic varchar( 24 ),
+        patronymic varchar( 24 ) NOT NULL,
+        birthdate date NOT NULL,
         phone varchar( 16 ) UNIQUE NOT NULL,
         class ClassNum,
 

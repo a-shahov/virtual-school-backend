@@ -1,4 +1,10 @@
+import re
 from hashlib import blake2b
+from contextlib import suppress
+from ipaddress import (
+    IPv4Address,
+    IPv6Address,
+)
 from secrets import (
     token_bytes,
     token_urlsafe,
@@ -54,3 +60,64 @@ def generate_refresh_token(config, claims):
     
     return token, payload
 
+def _validate_ip(value):
+    """
+    return True if value valid ipv4 or ipv6 address otherwise return False
+    """
+    with suppress(ValueError):
+        if IPv4Address(value):
+            return True
+
+    with suppress(ValueError):
+        if IPv6Address(value):
+            return True
+
+    return False
+
+
+def validate_email(email_address):
+    """
+    return True if email_address is valid otherwise False
+    """
+    HOST_REGEXP = re.compile(
+        # max length for domain name labels is 63 characters per RFC 1034
+        r'((?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+)' +
+        r'(?:[A-Z0-9-]{2,63}(?<!-))\Z',
+        re.IGNORECASE,
+    )
+
+    LITERAL_REGEXP = re.compile(
+        # literal form, ipv4 or ipv6 address (SMTP 4.1.3)
+        r'\[([A-F0-9:\.]+)\]\Z',
+        re.IGNORECASE,
+    )
+
+    USER_REGEXP = re.compile(
+        # dot-atom
+        r"(^[-!#$%&'*+/=?^_`{}|~0-9A-Z]+(\.[-!#$%&'*+/=?^_`{}|~0-9A-Z]+)*\Z" +
+        # quoted-string
+        r'|^"([\001-\010\013\014\016-\037!#-\[\]-\177]|\\[\001-\011\013' +
+        r'\014\016-\177])*"\Z)',
+        re.IGNORECASE,
+    )
+
+    try:
+        user, domain = email_address.rsplit('@', 1)
+
+        if not USER_REGEXP.match(user):
+            return False
+
+        if domain.startswith('[') and domain.endswith(']'):
+            literal_match = LITERAL_REGEXP.match(domain)
+            if literal_match is None:
+                return False
+            elif not _validate_ip(literal_match.group(1)):
+                return False
+        else:
+            if not HOST_REGEXP.match(domain):
+                return False
+
+    except ValueError:
+        return False
+
+    return True

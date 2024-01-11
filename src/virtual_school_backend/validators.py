@@ -17,6 +17,9 @@ def validate_data(data, validator):
 
     validation_errors = []
     for error in validator.iter_errors(json_data):
+        # TODO: need add logging!
+        # TODO: need to research error.path[0]
+        error.reason = f'{error.path[0]} validation error'
         validation_errors.append(error)
 
     if validation_errors:

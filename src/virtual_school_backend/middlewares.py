@@ -71,7 +71,7 @@ async def error_middleware(request, handler):
         )
     except ExceptionGroup as err:
         response = json_response(
-            {'errors': [(exc.cause.message if exc.cause else exc.message) for exc in err.exceptions]},
+            {'errors': [exc.reason for exc in err.exceptions]},
             status=400,
         )
     except Exception as err:

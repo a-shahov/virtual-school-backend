@@ -61,11 +61,11 @@ __Examples:__<br>
 ### __error__
 
 __Description:__<br>
-_Этот объект используется для пересылки сообщения об ошибке в случае различных ошибок_
+_Этот объект используется для пересылки сообщений об ошибках в различных случаях_
 
 ```json
 {
-    errors: [string],
+    "errors": ["string"],
 }
 ```
 __Description of attributes:__<br>
@@ -76,7 +76,11 @@ __Examples:__<br>
 
 ```json
 {
-    err: "email validation error"
+    "errors": ["email validation error", "name validation error"]
+}
+
+{
+    "errors": ["email already exists"]
 }
 ```
 
@@ -113,21 +117,21 @@ _Этот объект используется для лоигна пользо
 
 ```json
 {
-    email: string,
-    password: string,
+    "email": "string",
+    "password": "string",
 }
 ```
 __Description of attributes:__<br>
 
 + __email__ - почта
-+ __password__ - пароль, минимум 8 символов (строчные, прописные, цифры)
++ __password__ - пароль, минимум 8 символов (ascii заглавные, прописные и цифры)
 
 __Examples:__<br>
 
 ```json
 {
-    email: "andrey.shahov@example.ru",
-    password: "qwerty1234QW",
+    "email": "andrey.shahov@example.ru",
+    "password": "qwerty1234QW",
 }
 ```
 
@@ -140,22 +144,22 @@ _Этот объект используется при регистрации н
 
 ```json
 {
-    email: string,
-    password: string,
-    name: string,
-    secondname: string,
-    patronymic: string,
-    birthdate: string,
-    phone: string,
-    class: int,
+    "email": "string",
+    "password": "string",
+    "name": "string",
+    "secondname": "string",
+    "patronymic": "string",
+    "birthdate": "string",
+    "phone": "string",
+    "class": "int",
 }
 ```
 __Description of attributes:__<br>
 
 + __email__ - Почта, ограничение 64 символа
-+ __password__ - Пароль, минимум 8 символов. Должен содержать строчные, прописные ascii символы и цифры, также допустимыми являются специальные символы
++ __password__ - Пароль, минимум 8 символов. Должен содержать строчные, заглавные, ascii символы и цифры, также допустимыми являются специальные символы
 + __name__ - Имя пользователя, ограничение 24 символа
-+ __secondName__ - фамилия, ограничение 24 символа
++ __secondname__ - фамилия, ограничение 24 символа
 + __patronymic__ - Отчество, ограничение 24 символа
 + __birthdate__ - Дата рождения (YYYY-MM-DD)
 + __phone__ - Телефон
@@ -165,14 +169,14 @@ __Examples:__<br>
 
 ```json
 {
-    email: "andrey.shahov@example.ru",
-    password: "qwerty1234QW",
-    name: "Андрей",
-    secondName: "Шахов",
-    patronymic: "Владимирович",
-    birthdate: "2000-11-22",
-    phone: "89993332211"
-    class: 1,
+    "email": "andrey.shahov@example.ru",
+    "password": "qwerty1234QW",
+    "name": "Андрей",
+    "secondName": "Шахов",
+    "patronymic": "Владимирович",
+    "birthdate": "2000-11-22",
+    "phone": "89993332211"
+    "class": 1,
 }
 ```
 
@@ -229,7 +233,7 @@ __Examples:__<br>
 ### __token__
 
 __Description:__<br>
-_Этот объект используется для отправки access token на клиента, в случае успешной аутентификации_
+_Этот объект используется для отправки access token, в случае успешной аутентификации_
 
 ```json
 {
