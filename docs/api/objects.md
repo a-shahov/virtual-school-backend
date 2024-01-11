@@ -237,11 +237,11 @@ _Этот объект используется для отправки access t
 
 ```json
 {
-    token_type: string,
-    access_token: string,
-    role: string,
-    expires_in: int,
-    expires: int,
+    "token_type": "string",
+    "access_token": "string",
+    "role": "string",
+    "expires_in": "int",
+    "expires": "int",
 }
 ```
 __Description of attributes:__<br>
