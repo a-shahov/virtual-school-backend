@@ -1,0 +1,74 @@
+title = "Configuration logging module for virtual school backend"
+description = ""
+
+# Format for access logger in aiohttp
+[access_logger]
+format = """\
+         [\"%r\" %{X-Forwarded-Host}i code: %s size: %b bytes] from \
+         [%{X-Real-IP}i] \
+         duration: %Dus\
+         """
+
+# Production logging config with level = "INFO"
+[logging_info]
+version = 1
+disable_existing_loggers = true
+
+[logging_info.root]
+level = "INFO"
+handlers = ["console"]
+
+[logging_info.filters.web_debug]
+"()" = "virtual_school_backend.WebDebugFilter"
+
+[logging_info.formatters.regular]
+format = "%(message)s"
+
+[logging_info.formatters.verbose]
+format = """\
+         Datetime:    %(asctime)s\n\
+         ======================================\n\
+         Error message:\n\
+         %(message)s\n\
+         ======================================\
+         """
+datefmt = "%Y-%m-%d %H:%M:%S %z"
+
+[logging_info.formatters.debug]
+format = "[%(method)s %(url)s] %(message)s"
+
+[logging_info.handlers.console]
+level = "INFO"
+class = "logging.StreamHandler"
+formatter = "regular"
+filters = ['web_debug']
+
+[logging_info.handlers.console_web_debug]
+level = "DEBUG"
+class = "logging.StreamHandler"
+formatter = "debug"
+
+[logging_info.loggers]
+"aiohttp.access" = { level = "INFO", propagate = true }
+"aiohttp.web" = { level = "INFO", propagate = true, handlers = ["console_web_debug"] }
+"aiohttp.server" = { level = "INFO", propagate = true }
+virtual_school_backend = { level = "INFO", propagate = true }
+
+
+# Development logging config with level = "DEBUG"
+[logging_debug]
+version = 1
+disable_existing_loggers = false
+incremental = true
+
+[logging_debug.root]
+level = "DEBUG"
+
+[logging_debug.handlers.console]
+level = "DEBUG"
+
+[logging_debug.loggers]
+"aiohttp.access" = { level = "DEBUG" }
+"aiohttp.web" = { level = "DEBUG" }
+"aiohttp.server" = { level = "DEBUG" }
+virtual_school_backend = { level = "DEBUG" }

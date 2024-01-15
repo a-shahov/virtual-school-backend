@@ -1,3 +1,4 @@
+import logging
 from datetime import (
     datetime as dt,
     timezone as tz,
@@ -34,6 +35,8 @@ from .tools import (
     generate_access_token,
     generate_refresh_token,
 )
+
+log = logging.getLogger('aiohttp.web')
 
 
 # TODO: need rewrite all SQL queries
@@ -84,6 +87,7 @@ UPDATE_TOKENS = """
 
 
 class LoginHandler(View):
+    """View for /auth/login"""
 
     @validate_json_request(LOGIN_SCHEMA, login_formatcheck)
     async def post(self, json_data):
@@ -136,9 +140,13 @@ class LoginHandler(View):
             secure=True, samesite='None',
             max_age=round(refresh_payload['exp'] - refresh_payload['iat']),
         )
+
+        log.info('User has logged in with email: %s', json_data['email'])
+
         return response
 
 class RefreshHandler(View):
+    """View for /auth/refresh"""
 
     async def get(self):
         pg_pool = self.request.app[ROOT_APP][PG_POOL]
@@ -201,9 +209,11 @@ class RefreshHandler(View):
 
 
 class RegistrationHandler(View):
+    """View for /auth/registration"""
 
     @validate_json_request(REGISTRATION_SCHEMA, registration_formatcheck)
     async def post(self, json_data):
+        raise HTTPBadRequest(reason='email already exists')
         pg_pool = self.request.app[ROOT_APP][PG_POOL]
         config = self.request.app[ROOT_APP][CONFIG]
 
@@ -255,11 +265,17 @@ class RegistrationHandler(View):
                 user_id, = await acur.fetchone()
 
                 await acur.execute(UPDATE_LOGIN, (user_id, login_id))
+
+        log.info(
+            'New user %s %s with email: %s has registered',
+            json_data['name'], json_data['secondname'], json_data['email'],
+        )
                 
         return Response()
 
 
 class LogoutHandler(View):
+    """View for /auth/logout"""
 
     async def get(self):
         pg_pool = self.request.app[ROOT_APP][PG_POOL]
@@ -281,6 +297,7 @@ class LogoutHandler(View):
 
 
 class WhoamiHandler(View):
+    """View for /auth/whoami"""
 
     async def get(self):
         pg_pool = self.request.app[ROOT_APP][PG_POOL]

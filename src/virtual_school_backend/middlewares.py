@@ -1,3 +1,7 @@
+import logging
+import sys
+import traceback
+
 from aiohttp.web import (
     json_response,
     middleware,
@@ -13,9 +17,12 @@ from jwt import (
 
 from virtual_school_backend.appkeys import CONFIG
 
+log = logging.getLogger('aiohttp.web')
+
 
 def set_permission(permisions):
-    valid_perms = ('admin', 'teacher', 'user')
+    """This functions is used as decorator which sets permissions on handlers"""
+    valid_perms = {'admin', 'teacher', 'user'}
     assert all((perm in valid_perms for perm in permisions)), f'this {permisions=}, are not valid'
 
     def wrapper(func):
@@ -25,7 +32,17 @@ def set_permission(permisions):
 
 @middleware
 async def auth_middleware(request, handler):
+    """
+    Retrieve and validate access token from Authorization header
+    And then check sub claim according to handler permissions
+    """
     config = request.app[CONFIG]
+
+    if log.isEnabledFor(logging.DEBUG):
+        log.debug(
+            'headers: %s', request.headers,
+            extra={'url': request.rel_url, 'method': request.method},
+        )
 
     endpoint = getattr(handler, request.method.lower(), None)
     permissions = getattr(endpoint, 'permissions', None)
@@ -54,6 +71,11 @@ async def auth_middleware(request, handler):
         raise HTTPForbidden(reason='the access token has expired')
     except InvalidSignatureError:
         raise HTTPUnauthorized(reason='invalid access token')
+    
+    log.debug(
+        'access token payload: [%s]', access_payload,
+        extra={'url': request.rel_url, 'method': request.method},
+    )
 
     if access_payload['sub'] not in permissions and access_payload['sub'] != 'admin':
         raise HTTPForbidden(reason='insufficient access rights')
@@ -62,19 +84,27 @@ async def auth_middleware(request, handler):
 
 @middleware
 async def error_middleware(request, handler):
+    """Intercepts exceptions and returns json with errors"""
     try:
+        exc = None
         response = await handler(request)
     except HTTPException as err:
         response = json_response(
             {'errors': [err.reason]},
             status=err.status_code,
         )
-    except ExceptionGroup as err:
+        exc = sys.exc_info()[1]
+    except ExceptionGroup as err:  # ExceptionGroup only for validation errors
         response = json_response(
             {'errors': [exc.reason for exc in err.exceptions]},
             status=400,
         )
-    except Exception as err:
-        raise err
+        exc = sys.exc_info()[1]
+    finally:
+        if exc and log.isEnabledFor(logging.DEBUG):
+            log.debug(
+                '\n%s', "".join(traceback.format_exception(exc)),
+                extra={'url': request.rel_url, 'method': request.method},
+            )
 
     return response

@@ -1,3 +1,5 @@
+import logging
+
 from aiohttp.web import (
     middleware,
     HTTPForbidden,
@@ -14,8 +16,12 @@ from virtual_school_backend.appkeys import (
     ROOT_APP,
 )
 
+log = logging.getLogger('aiohttp.web')
+
+
 @middleware
 async def refresh_middleware(request, handler):
+    """This middleware validates refresh token for specified paths"""
     refresh_endpoints = [
         ('GET', '/auth/logout'),
         ('GET', '/auth/refresh'),
@@ -41,4 +47,10 @@ async def refresh_middleware(request, handler):
         raise HTTPUnauthorized(reason='invalid refresh token')
     
     request['refresh_payload'] = refresh_payload
+
+    log.debug(
+        'refresh payload: %s', refresh_payload,
+        extra={'url': request.rel_url, 'method': request.method},
+    )
+
     return await handler(request)

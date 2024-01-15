@@ -18,9 +18,8 @@ import jwt
 
 
 def generate_hash(password, config, *, salt=None):
-    """
-    Generates a hash and a salt and returns them.
-    """
+    """Generates a hash and a salt and returns them"""
+
     salt = salt or token_bytes(config.SALT_LEN)
     pass_hash = blake2b(password.encode('utf-8'), key=config.PASS_KEY.encode('utf-8'), salt=salt).digest()
     return pass_hash, salt
@@ -43,7 +42,7 @@ def generate_access_token(config, claims):
     return token, payload
 
 def generate_refresh_token(config, claims):
-    """Generates JWT refresh token."""
+    """Generates JWT refresh token"""
 
     payload = {
         'iss': config.BACKEND_NAME,
@@ -76,9 +75,8 @@ def _validate_ip(value):
 
 
 def validate_email(email_address):
-    """
-    return True if email_address is valid otherwise False
-    """
+    """return True if email_address is valid otherwise False"""
+
     HOST_REGEXP = re.compile(
         # max length for domain name labels is 63 characters per RFC 1034
         r'((?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+)' +

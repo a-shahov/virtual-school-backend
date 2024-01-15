@@ -1,6 +1,7 @@
-import logging
 import asyncio
+import logging
 import sys
+from logging.config import dictConfig
 
 import uvloop
 from psycopg_pool import AsyncConnectionPool
@@ -14,6 +15,7 @@ from aiohttp.web import (
 from virtual_school_backend import (
     auth_middleware,
     error_middleware,
+    setup_logging,
     ROOT_APP,
     CONFIG,
     PG_POOL,
@@ -23,16 +25,16 @@ from virtual_school_backend.user import UserApp
 from virtual_school_backend.mainpage import MainApp
 from virtual_school_backend.config import Config
 
+log = logging.getLogger('virtual_school_backend')
+
 
 class Backend:
     """
     argparse
     background jobs
-    setup logging
     unix socket with aiohttp? for faster work?
     pytest
     """
-    #  TODO: add logging
     #  TODO: add error handling
     #  TODO: add runner.cleanup
     def __init__(self, *, config, middlewares, subapps):
@@ -43,7 +45,7 @@ class Backend:
     
     def _add_subapps(self, subapps):
         for path, subapp in subapps:
-            subapp[ROOT_APP] = self.app
+            subapp[ROOT_APP] = self.app  # TODO: fix this bug!!!
             self.app.add_subapp(path, subapp)
     
     @staticmethod
@@ -54,15 +56,24 @@ class Backend:
 
     def run(self):
         run_app(
-            self.app, port=self.app[CONFIG].PORT,
+            self.app,
+            port=self.app[CONFIG].PORT,
             host=self.app[CONFIG].HOST,
+            print=None,
+            access_log_format=self.app[CONFIG].ACCESS_LOG_FMT,
         )
 
 
 def main():
-    #  TODO: add setup configuration
-    #  TODO: add argparse
+    # TODO: add argparse
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+    setup_logging(Config)
+
+    log.info(
+        'starting backend with startup mode [%s] on http://%s:%d',
+        Config.STARTUP_MODE, Config.HOST, Config.PORT,
+    )
+ 
     Backend(
         config=Config,
         middlewares=[error_middleware, auth_middleware],
