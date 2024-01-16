@@ -19,7 +19,6 @@ from jwt import (
 )
 
 from virtual_school_backend import (
-    ROOT_APP,
     CONFIG,
     PG_POOL,
     validate_json_request,
@@ -91,8 +90,8 @@ class LoginHandler(View):
 
     @validate_json_request(LOGIN_SCHEMA, login_formatcheck)
     async def post(self, json_data):
-        config = self.request.app[ROOT_APP][CONFIG]
-        pg_pool = self.request.app[ROOT_APP][PG_POOL]
+        config = self.request.config_dict[CONFIG]
+        pg_pool = self.request.config_dict[PG_POOL]
 
         async with pg_pool.connection() as conn:
             async with conn.cursor() as acur:
@@ -149,8 +148,8 @@ class RefreshHandler(View):
     """View for /auth/refresh"""
 
     async def get(self):
-        pg_pool = self.request.app[ROOT_APP][PG_POOL]
-        config = self.request.app[ROOT_APP][CONFIG]
+        config = self.request.config_dict[CONFIG]
+        pg_pool = self.request.config_dict[PG_POOL]
         refresh_payload = self.request['refresh_payload']
         
         async with pg_pool.connection() as conn:
@@ -213,9 +212,8 @@ class RegistrationHandler(View):
 
     @validate_json_request(REGISTRATION_SCHEMA, registration_formatcheck)
     async def post(self, json_data):
-        raise HTTPBadRequest(reason='email already exists')
-        pg_pool = self.request.app[ROOT_APP][PG_POOL]
-        config = self.request.app[ROOT_APP][CONFIG]
+        config = self.request.config_dict[CONFIG]
+        pg_pool = self.request.config_dict[PG_POOL]
 
         async with pg_pool.connection() as conn:
             async with conn.cursor() as acur:
@@ -278,7 +276,7 @@ class LogoutHandler(View):
     """View for /auth/logout"""
 
     async def get(self):
-        pg_pool = self.request.app[ROOT_APP][PG_POOL]
+        pg_pool = self.request.config_dict[PG_POOL]
         refresh_payload = self.request['refresh_payload']
 
         async with pg_pool.connection() as conn:
@@ -300,5 +298,5 @@ class WhoamiHandler(View):
     """View for /auth/whoami"""
 
     async def get(self):
-        pg_pool = self.request.app[ROOT_APP][PG_POOL]
+        pg_pool = self.request.config_dict[PG_POOL]
         # TODO: SQL query from 2 tables!!

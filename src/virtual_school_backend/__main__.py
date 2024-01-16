@@ -16,7 +16,6 @@ from virtual_school_backend import (
     auth_middleware,
     error_middleware,
     setup_logging,
-    ROOT_APP,
     CONFIG,
     PG_POOL,
 )
@@ -45,7 +44,6 @@ class Backend:
     
     def _add_subapps(self, subapps):
         for path, subapp in subapps:
-            subapp[ROOT_APP] = self.app  # TODO: fix this bug!!!
             self.app.add_subapp(path, subapp)
     
     @staticmethod

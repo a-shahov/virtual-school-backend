@@ -11,10 +11,7 @@ from jwt import (
     InvalidSignatureError,
 )
 
-from virtual_school_backend.appkeys import (
-    CONFIG,
-    ROOT_APP,
-)
+from virtual_school_backend.appkeys import CONFIG
 
 log = logging.getLogger('aiohttp.web')
 
@@ -29,7 +26,7 @@ async def refresh_middleware(request, handler):
     if (request.method, request.url.path) not in refresh_endpoints:
         return await handler(request)
     
-    config = request.app[ROOT_APP][CONFIG]
+    config = request.config_dict[CONFIG]
     
     if not (refresh_token := request.cookies.get('__Secure-refresh-token')):
         raise HTTPUnauthorized(reason='the refresh token is missing in request')

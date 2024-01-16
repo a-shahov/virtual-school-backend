@@ -42,11 +42,13 @@ level = "INFO"
 class = "logging.StreamHandler"
 formatter = "regular"
 filters = ['web_debug']
+stream = 'ext://sys.stdout'
 
 [logging_info.handlers.console_web_debug]
 level = "DEBUG"
 class = "logging.StreamHandler"
 formatter = "debug"
+stream = 'ext://sys.stdout'
 
 [logging_info.loggers]
 "aiohttp.access" = { level = "INFO", propagate = true }

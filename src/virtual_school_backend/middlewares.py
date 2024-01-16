@@ -103,7 +103,7 @@ async def error_middleware(request, handler):
     finally:
         if exc and log.isEnabledFor(logging.DEBUG):
             log.debug(
-                '\n%s', "".join(traceback.format_exception(exc)),
+                'exception:\n%s', "".join(traceback.format_exception(exc)),
                 extra={'url': request.rel_url, 'method': request.method},
             )
 

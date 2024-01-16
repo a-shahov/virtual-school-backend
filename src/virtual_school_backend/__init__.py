@@ -10,7 +10,6 @@ from virtual_school_backend.middlewares import (
     error_middleware,
 )
 from virtual_school_backend.appkeys import (
-    ROOT_APP,
     CONFIG,
     PG_POOL,
 )
