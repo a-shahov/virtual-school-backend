@@ -1,0 +1,1 @@
+from virtual_school_backend.scripts.init_db import init_db

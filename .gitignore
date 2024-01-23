@@ -6,9 +6,6 @@ dist/
 
 *.pyc
 __pycache__/
+.pytest_cahce/
 
 .env
-
-# temporary files
-test*
-tasks.txt

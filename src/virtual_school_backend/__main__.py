@@ -68,7 +68,7 @@ def main():
     setup_logging(Config)
 
     log.info(
-        'starting backend with startup mode [%s] on http://%s:%d',
+        'starting backend with startup mode = [%s] on http://%s:%d',
         Config.STARTUP_MODE, Config.HOST, Config.PORT,
     )
  

@@ -22,7 +22,7 @@ handlers = ["console"]
 "()" = "virtual_school_backend.WebDebugFilter"
 
 [logging_info.formatters.regular]
-format = "%(message)s"
+format = "%(levelname)s %(message)s"
 
 [logging_info.formatters.verbose]
 format = """\
@@ -36,6 +36,7 @@ datefmt = "%Y-%m-%d %H:%M:%S %z"
 
 [logging_info.formatters.debug]
 format = "[%(method)s %(url)s] %(message)s"
+defaults = { method = "", url = "" }
 
 [logging_info.handlers.console]
 level = "INFO"

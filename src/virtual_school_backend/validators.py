@@ -8,6 +8,7 @@ from jsonschema import (
     Draft202012Validator,
     ValidationError,
 )
+from jsonschema.exceptions import best_match
 
 log = logging.getLogger('aiohttp.web')
 
@@ -19,11 +20,9 @@ def _validate_data(data, validator):
     except JSONDecodeError:
         raise HTTPBadRequest(reason='invalid json data in request')
 
-    validation_errors = []
-    for error in validator.iter_errors(json_data):
-        # TODO: need to research error.path[0]
-        error.reason = f'{error.path[0]} validation error'
-        validation_errors.append(error)
+    validation_errors = list(validator.iter_errors(json_data))
+    for error in validation_errors:
+        error.reason = f'{error.path[-1]} validation error' if len(error.path) else error.message
 
     if validation_errors:
         raise ExceptionGroup('Validation errors', validation_errors)

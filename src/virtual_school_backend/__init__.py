@@ -1,3 +1,5 @@
+__version__ = "0.1.0"
+
 from virtual_school_backend.subapp import SubApp
 from virtual_school_backend.validators import validate_json_request
 from virtual_school_backend.setup_logging import (

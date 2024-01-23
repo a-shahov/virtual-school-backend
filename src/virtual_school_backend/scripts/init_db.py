@@ -186,7 +186,7 @@ commands = [
     CREATE_NEWS_TABLE,
 ]
 
-def main():
+def init_db():
     with Connection.connect(Config.DSN) as conn:
         with conn.cursor() as cur:
             
