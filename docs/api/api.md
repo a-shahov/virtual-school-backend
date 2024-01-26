@@ -52,7 +52,8 @@ _description:_ endpoint for logout action. invalidates current refresh token<br>
 _permission:_ __user__, __teacher__, __admin__<br>
 _responses:_<br>
     + 200 - OK
-    + 400 - Bad request. With __[error](./objects#error)__
+    + 401 - Unauthorized in case of invalid refresh token. With __[error](./objects#error)__
+    + 403 - Forbidden in case of expired/used refresh token. With __[error](./objects#error)__
     + 500 - Internal error
 
 + __GET__ `/auth/refresh`<br>

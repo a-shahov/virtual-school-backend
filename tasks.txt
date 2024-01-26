@@ -47,8 +47,20 @@ Global tasks:
     44) need to create database in docker container for run tests
     45) need to explain pytest-aiohttp
     46) need to explain pytest-asyncio
-    47) need to figure out how to run tests with uvloop
+    47) need to figure out how to run tests with uvloop (done)
     48) need deep learning pytest
+    49) need to rewrite all tests without excess plugins
+    50) need to explain coverage
+    51) need to explain pytest-cov
+    52) need to explain pytest-xdist
+    53) need to check how works logging and 500 errors
+    54) need to read aiohttp client documentation
+    55) (done) need to renew pyjwt api in decode function required
+    56) need to learn pyjwt documentation
+    57) maybe need to make id for request and send him in logs
+    58) need to explain pytest-repeat
+    59) check all log.debug with isEnabledFor
+    60) need generate random user data when refactoring tests
 
 Current tasks:
     1) refresh token in cookies need to change (done)
@@ -69,10 +81,14 @@ Current tasks:
     6) need to do app.config_dict['...'] (done)
     7) learn pytest (done)
     8) implement tests for backend
-        - simple script in makefile with create db and drop db
-	- figure out how to work with logging
-	- figure out how write test without pytest-aiohttp
-	- creating and destroying db it is not a task for backend!
+        - need to remove tests from TestAuthEndpoints (done)
+	- need to move all asserts from login_test in functions
+        - need to get rid off dependency between tests (done partially)
+        - simple script in makefile with create db and drop db (done)
+	- figure out how to work with logging (done)
+	- figure out how write test without pytest-aiohttp (done) - need to implement
+	- creating and destroying db it is not a task for backend! (done)
     9) put in order knowledge base
         - just need linux to put in order
+    10) need to renew pyjwt api in decode function required (done)
 

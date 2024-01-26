@@ -2,11 +2,19 @@ import logging
 from logging.config import dictConfig
 
 
-class WebDebugFilter(logging.Filter):
+class RejectWebDebugFilter(logging.Filter):
     """Filter for rejecting all DEBUG logs from aiohttp.web on console handler"""
     
     def filter(self, record):
-        if record.name == 'aiohttp.web':
+        if record.name == 'aiohttp.web' and record.levelno == logging.DEBUG:
+            return False
+        return True
+
+class AcceptOnlyWebDebugFilter(logging.Filter):
+    """Filter for accepting only DEBUG logs from aiohttp.web on console_web_debug handler"""
+
+    def filter(self, record):
+        if record.levelno != logging.DEBUG:
             return False
         return True
 

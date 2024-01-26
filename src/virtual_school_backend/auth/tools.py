@@ -11,7 +11,7 @@ from secrets import (
 )
 from datetime import (
     datetime as dt,
-    timezone as tz,
+    UTC,
 )
 
 import jwt
@@ -30,7 +30,7 @@ def generate_access_token(config, claims):
     payload = {
         'iss': config.BACKEND_NAME,
         'sub': claims['sub'],
-        'iat': (timestamp := dt.now(tz=tz.utc).timestamp()),
+        'iat': (timestamp := dt.now(tz=UTC).timestamp()),
         'exp': timestamp + config.ACCESS_TOKEN_EXP,
     }
     token = jwt.encode(
@@ -48,7 +48,7 @@ def generate_refresh_token(config, claims):
         'iss': config.BACKEND_NAME,
         'sub': claims['sub'],
         'jti': token_urlsafe(config.JTI_LEN),
-        'iat': (timestamp := dt.now(tz=tz.utc).timestamp()),
+        'iat': (timestamp := dt.now(tz=UTC).timestamp()),
         'exp': claims.get('exp', timestamp + config.REFRESH_TOKEN_EXP),
     }
     token = jwt.encode(

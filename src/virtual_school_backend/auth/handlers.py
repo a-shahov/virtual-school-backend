@@ -282,6 +282,15 @@ class LogoutHandler(View):
         async with pg_pool.connection() as conn:
             async with conn.cursor() as acur:
 
+                await acur.execute(SELECT_TOKENS, (refresh_payload['jti'],))
+                if (result := await acur.fetchone()):
+                    login_id, token_used = result
+                else:
+                    raise HTTPUnauthorized(reason='token not in database')
+                
+                if token_used:
+                    raise HTTPForbidden(reason='the token was used')
+
                 await acur.execute(UPDATE_TOKENS, (refresh_payload['jti'],))
         
         response = Response()

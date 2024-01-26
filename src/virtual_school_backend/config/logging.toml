@@ -18,8 +18,11 @@ disable_existing_loggers = true
 level = "INFO"
 handlers = ["console"]
 
-[logging_info.filters.web_debug]
-"()" = "virtual_school_backend.WebDebugFilter"
+[logging_info.filters.reject_web_debug]
+"()" = "virtual_school_backend.RejectWebDebugFilter"
+
+[logging_info.filters.accept_only_web_debug]
+"()" = "virtual_school_backend.AcceptOnlyWebDebugFilter"
 
 [logging_info.formatters.regular]
 format = "%(levelname)s %(message)s"
@@ -35,20 +38,21 @@ format = """\
 datefmt = "%Y-%m-%d %H:%M:%S %z"
 
 [logging_info.formatters.debug]
-format = "[%(method)s %(url)s] %(message)s"
+format = "%(levelname)s [%(method)s %(url)s] %(message)s"
 defaults = { method = "", url = "" }
 
 [logging_info.handlers.console]
 level = "INFO"
 class = "logging.StreamHandler"
 formatter = "regular"
-filters = ['web_debug']
+filters = ['reject_web_debug']
 stream = 'ext://sys.stdout'
 
 [logging_info.handlers.console_web_debug]
 level = "DEBUG"
 class = "logging.StreamHandler"
 formatter = "debug"
+filters = ['accept_only_web_debug']
 stream = 'ext://sys.stdout'
 
 [logging_info.loggers]

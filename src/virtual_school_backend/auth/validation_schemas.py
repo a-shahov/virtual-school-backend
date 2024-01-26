@@ -8,7 +8,7 @@ from .tools import validate_email
 
 
 name_pattern = r'^[а-яА-Я]+$'
-phone_pattern = r'^\+?[0-9]+$'
+phone_pattern = r'^((\+?[0-9]+){2,}|([0-9]+))$'
 
 registration_formatcheck = FormatChecker()
 login_formatcheck = FormatChecker()
@@ -34,14 +34,14 @@ def is_valid_password(instance):
     password_set = frozenset(instance)
 
     if password_set & frozenset().union(*Config.PASS_FORBID_CHARS):
-        raise ValidationError(f'{instance} contains forbidden chars')
+        raise ValidationError('password contains forbidden chars')
 
     if not password_set.issubset(frozenset().union(*Config.PASS_VALID_CHARS)):
-        raise ValidationError(f'{instance} contains unacceptable chars')
+        raise ValidationError(f'password contains unacceptable chars')
 
     for password_subset in Config.PASS_MUST_SUBSETS_CHARS:
         if not password_subset & password_set:
-            raise ValidationError(f'{instance} is too weak password')
+            raise ValidationError(f'password is too weak')
 
     return True
 

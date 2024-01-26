@@ -21,7 +21,6 @@ classifiers = [
 ]
 dependencies = [
     "aiohttp",
-    "pytest-aiohttp",
     "uvloop",
     "psycopg[binary, pool]",
     "python-dotenv",
@@ -35,6 +34,9 @@ dev = [
 ]
 test = [
     "pytest",
+    "pytest-asyncio",
+    "pytest-aiohttp",
+    "pytest-repeat",
 ]
 docs = [
 ]

@@ -15,7 +15,8 @@ from virtual_school_backend.mainpage import MainApp
 from virtual_school_backend.config import Config
 
 
-@pytest.fixture()
+# TODO: need to write with AppRunner
+@pytest.fixture
 async def backend_client(aiohttp_client, postgresql, patch_config):
     setup_logging(Config)
     app = Backend(
@@ -28,18 +29,5 @@ async def backend_client(aiohttp_client, postgresql, patch_config):
         ],
     ).app
 
+    # Here bug server_kwargs not transmitted into TestServer correctly
     return await aiohttp_client(app, server_kwargs={'access_log_format': app[CONFIG].ACCESS_LOG_FMT})
-
-@pytest.fixture()
-def reg_data():
-    data = {
-        'email': 'andrey@yandex.ru',
-        'password': '1234qwertyQW',
-        'name': 'Андрей',
-        'secondname': 'Шахов',
-        'patronymic': 'Владимирович',
-        'birthdate': '2000-11-22',
-        'phone': '8999992233',
-        'class': 1,
-    }
-    return data

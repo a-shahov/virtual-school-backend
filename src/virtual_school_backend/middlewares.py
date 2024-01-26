@@ -13,6 +13,10 @@ import jwt
 from jwt import (
     ExpiredSignatureError,
     InvalidSignatureError,
+    InvalidIssuedAtError,
+    InvalidIssuerError,
+    InvalidTokenError,
+    ImmatureSignatureError,
 )
 
 from virtual_school_backend.appkeys import CONFIG
@@ -64,18 +68,35 @@ async def auth_middleware(request, handler):
         access_payload = jwt.decode(
             access_token, config.TOKEN_KEY,
             algorithms=config.TOKEN_ALG, 
-            require=config.ACCESS_TOKEN_CLAIMS,
             issuer=config.BACKEND_NAME,
+            options={
+                'verify_signature': True,
+                'require': config.ACCESS_TOKEN_CLAIMS,
+            },
         )
     except ExpiredSignatureError:
         raise HTTPForbidden(reason='the access token has expired')
     except InvalidSignatureError:
+        raise HTTPUnauthorized(reason='invalid access token signature')
+    except InvalidIssuerError:
+        raise HTTPUnauthorized(reason='invalid iss claim in access token')
+    except InvalidIssuedAtError:
+        raise HTTPUnauthorized(reason='invalid iat claim in access token')
+    except ImmatureSignatureError:
+        raise HTTPForbidden(reason='iat claim in the future in access token')
+    except InvalidTokenError as err:
+        if log.isEnabledFor(logging.DEBUG):
+            log.debug(
+                'jwt decode error = %s %s', err, type(err),
+                extra={'url': request.rel_url, 'method': request.method},
+            )
         raise HTTPUnauthorized(reason='invalid access token')
     
-    log.debug(
-        'access token payload: [%s]', access_payload,
-        extra={'url': request.rel_url, 'method': request.method},
-    )
+    if log.isEnabledFor(logging.DEBUG):
+        log.debug(
+            'access token payload: [%s]', access_payload,
+            extra={'url': request.rel_url, 'method': request.method},
+        )
 
     if access_payload['sub'] not in permissions and access_payload['sub'] != 'admin':
         raise HTTPForbidden(reason='insufficient access rights')

@@ -10,7 +10,7 @@ def patch_config():
     with MonkeyPatch.context() as mp:
         DSN = 'dbname=test2 user=postgres host=127.0.0.1 port=5432 password=qwerty'
         mp.setattr(Config, 'DSN', DSN)
-        mp.setattr(Config, 'STARTUP_MODE', 'DEVELOPMENT')
+        mp.setattr(Config, 'STARTUP_MODE', 'development')
         yield mp
 
 @pytest.fixture(scope='session')

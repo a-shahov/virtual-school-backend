@@ -4,7 +4,8 @@ from virtual_school_backend.subapp import SubApp
 from virtual_school_backend.validators import validate_json_request
 from virtual_school_backend.setup_logging import (
     setup_logging,
-    WebDebugFilter,
+    RejectWebDebugFilter,
+    AcceptOnlyWebDebugFilter,
 )
 from virtual_school_backend.middlewares import (
     set_permission,
