@@ -1,5 +1,7 @@
 import logging
+from dataclasses import dataclass
 from datetime import (
+    date,
     datetime as dt,
     timezone as tz,
 )
@@ -40,10 +42,32 @@ log = logging.getLogger('aiohttp.web')
 
 # TODO: need rewrite all SQL queries
 SELECT_LOGIN_BY_EMAIL = """
-    SELECT id, role, password, salt
-        FROM login
-        WHERE email = %s;
+    SELECT
+        l.id, l.role,
+        l.password, l.salt,
+        l.email, u.state, u.name,
+        u.secondname, u.patronymic,
+        u.birthdate, u.phone, u.class
+      FROM login l
+      LEFT OUTER JOIN user_account u ON u.login_id = l.id
+      WHERE l.email = %s;
 """
+
+@dataclass(frozen=True)
+class LoginData:
+    login_id: int
+    role: str
+    pass_hash: str
+    salt: str
+    email: str
+    state: str
+    name: str
+    secondname: str
+    patronymic: str
+    birthdate: date
+    phone: str
+    class_n: int
+
 #  SELECT extract( epoch from date_trunc('seconds', now()) at time zone 'utc')::numeric(20)
 INSERT_TOKENS = """
     INSERT INTO tokens ( login_id, token, jti, exp )
@@ -79,7 +103,7 @@ SELECT_TOKENS = """
     SELECT login_id, used FROM tokens
         WHERE jti = %s;
 """
-UPDATE_TOKENS = """
+UPDATE_TOKEN_USED = """
     UPDATE tokens
         SET used = true WHERE jti = %s;
 """
@@ -100,37 +124,51 @@ class LoginHandler(View):
                 if not (result := await acur.fetchone()):
                     raise HTTPBadRequest(reason='email not in database')
 
-                login_id, role, pass_hash_db, salt = result
+                login_data = LoginData(*result)
                 pass_hash, unused = generate_hash(
-                    json_data['password'], config, salt=salt,
+                    json_data['password'], config, salt=login_data.salt,
                 )
 
-                if pass_hash != pass_hash_db:
+                if pass_hash != login_data.pass_hash:
                     raise HTTPBadRequest(reason='wrong password')
-                                    
-                access_token, access_payload = generate_access_token(config, {'sub': role})
-                refresh_token, refresh_payload = generate_refresh_token(config, {'sub': role})
+
+                claims = {'sub': login_data.role, 'ueid': login_data.login_id} 
+                access_token, access_payload = generate_access_token(config, claims)
+                refresh_token, refresh_payload = generate_refresh_token(config, claims)
 
                 await acur.execute(
                     INSERT_TOKENS,
                     (
-                        login_id,
+                        login_data.login_id,
                         refresh_token,
                         refresh_payload['jti'],
                         refresh_payload['exp'],
                     ),
                 )
-                #  TODO: update timestamp in db
+                #  TODO: update timestamps in db
                 #  TODO: need delete rotten tokens
         
         expires_in = round(access_payload['exp'] - access_payload['iat'])
         response = json_response(
             {
-                'token_type': 'Bearer',
-                'access_token': access_token,
                 'role': access_payload['sub'],
-                'expires_in': expires_in,
-                'expires': round(refresh_payload['exp']),
+                'token': {
+                    'token_type': 'Bearer',
+                    'access_token': access_token,
+                    'expires_in': expires_in,
+                    'expires': round(refresh_payload['exp']),
+                },
+                'user_info': {
+                    'login_id': access_payload['ueid'],
+                    'state': login_data.state,
+                    'email': login_data.email,
+                    'name': login_data.name,
+                    'secondname': login_data.secondname,
+                    'patronymic': login_data.patronymic,
+                    'birthdate': login_data.birthdate.isoformat(),
+                    'phone': login_data.phone,
+                    'class': int(login_data.class_n),
+                },
             }
         )
         response.set_cookie(
@@ -164,17 +202,19 @@ class RefreshHandler(View):
                 if token_used:
                     raise HTTPForbidden(reason='the token was used')
                 
-                await acur.execute(UPDATE_TOKENS, (refresh_payload['jti'],))
+                await acur.execute(UPDATE_TOKEN_USED, (refresh_payload['jti'],))
 
                 new_refresh_token, new_refresh_payload = generate_refresh_token(
                     config, 
                     {
                         'sub': refresh_payload['sub'],
+                        'ueid': refresh_payload['ueid'],
                         'exp': refresh_payload['exp'],
                     }
                 )
                 new_access_token, new_access_payload = generate_access_token(
-                    config, {'sub': refresh_payload['sub']},
+                    config, 
+                    {'sub': refresh_payload['sub'], 'ueid': refresh_payload['ueid']},
                 )
 
                 await acur.execute(
@@ -193,6 +233,7 @@ class RefreshHandler(View):
                 'token_type': 'Bearer',
                 'access_token': new_access_token,
                 'role': new_access_payload['sub'],
+                'login_id': new_access_payload['ueid'],
                 'expires_in': expires_in,
                 'expires': round(new_refresh_payload['exp']),
             }
@@ -291,21 +332,13 @@ class LogoutHandler(View):
                 if token_used:
                     raise HTTPForbidden(reason='the token was used')
 
-                await acur.execute(UPDATE_TOKENS, (refresh_payload['jti'],))
+                await acur.execute(UPDATE_TOKEN_USED, (refresh_payload['jti'],))
         
         response = Response()
-        response.set_cookie(
+        response.set_cookie(  # del_cookie doesnt work with secure
             '__Secure-refresh-token', '', path='/auth/', 
             max_age=0, httponly=True, secure=True, 
             samesite='None',
         )
 
         return response
-
-
-class WhoamiHandler(View):
-    """View for /auth/whoami"""
-
-    async def get(self):
-        pg_pool = self.request.config_dict[PG_POOL]
-        # TODO: SQL query from 2 tables!!

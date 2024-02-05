@@ -50,6 +50,7 @@ class TestAuthEndpoints:
         payload = {
             'iss': Config.BACKEND_NAME,
             'sub': 'user',
+            'ueid': 14,
             'jti': 'qwerty',
             'iat': (timestamp := dt.now(tz=UTC).timestamp()),
             'exp': timestamp + 60,
@@ -110,8 +111,9 @@ class TestLogoutEndpoint(TestAuthEndpoints):
             ({'iss': 'bad issuer'}, (401, '{"errors": ["invalid iss claim in refresh token"]}')),
             ({'iat': dt.now(tz=UTC).timestamp() + 600}, (403, '{"errors": ["iat claim in the future in refresh token"]}')),
             ({'iat': 'invalid'}, (401, '{"errors": ["invalid iat claim in refresh token"]}')),
+            ({'ueid': 'invalid'}, (401, '{"errors": ["invalid ueid claim in refresh token"]}')),
         ],
-        ids=('token not in db', 'expired', 'bad exp', 'bad issuer', 'future iat', 'invalid iat'),
+        ids=('token not in db', 'expired', 'bad exp', 'bad issuer', 'future iat', 'invalid iat', 'invalid ueid'),
     )
     async def bad_refresh_payload_logout_test(self, backend_client, fake_refresh_payload,
                                               payload, expectation):
@@ -475,20 +477,30 @@ class TestLoginEndpoint(TestAuthEndpoints):
     
     @pytest.mark.asyncio
     @pytest.mark.repeat(5)
-    async def login_test(self, backend_client, valid_login_data):
+    async def login_test(self, backend_client, valid_login_data, valid_reg_data):
         cli = await backend_client
         resp = await cli.post(self.URL, json=valid_login_data)
         json_response = await resp.json()
 
-        # TODO: move all asserts into function
         assert resp.status == 200
-        assert json_response['token_type'] == 'Bearer'
         assert json_response['role'] == 'user'
-        assert json_response['expires_in'] == Config.ACCESS_TOKEN_EXP
-        assert abs(json_response['expires'] -
+
+        assert isinstance(json_response['user_info']['login_id'], int)
+        assert json_response['user_info']['state'] == 'new'
+        assert json_response['user_info']['email'] == valid_reg_data['email']
+        assert json_response['user_info']['name'] == valid_reg_data['name']
+        assert json_response['user_info']['secondname'] == valid_reg_data['secondname']
+        assert json_response['user_info']['patronymic'] == valid_reg_data['patronymic']
+        assert json_response['user_info']['birthdate'] == valid_reg_data['birthdate']
+        assert json_response['user_info']['phone'] == valid_reg_data['phone']
+        assert json_response['user_info']['class'] == valid_reg_data['class']
+
+        assert json_response['token']['token_type'] == 'Bearer'
+        assert json_response['token']['expires_in'] == Config.ACCESS_TOKEN_EXP
+        assert abs(json_response['token']['expires'] -
             (Config.REFRESH_TOKEN_EXP + dt.now(UTC).timestamp())) <= 1
 
-        access_token = json_response['access_token']
+        access_token = json_response['token']['access_token']
         access_payload = jwt.decode(
             access_token, Config.TOKEN_KEY,
             algorithms=Config.TOKEN_ALG,
@@ -498,8 +510,9 @@ class TestLoginEndpoint(TestAuthEndpoints):
             },
         )
 
+        assert isinstance(access_payload['ueid'], int)
         assert json_response['role'] == access_payload['sub']
-        assert abs(json_response['expires_in'] -
+        assert abs(json_response['token']['expires_in'] -
             (access_payload['exp'] - access_payload['iat'])) <= 1
 
         refresh_cookie = resp.cookies['__Secure-refresh-token']
@@ -543,4 +556,3 @@ class TestBehaviour(TestAuthEndpoints):
         cli = await backend_client
         resp = await cli.post('/auth/registration', json=valid_reg_data)
         assert (resp.status, await resp.text()) == (200, '')
-        assert 0

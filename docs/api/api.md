@@ -34,7 +34,7 @@ _description:_ endpoint for login action<br>
 _permission:_ __all__<br>
 _request body:_ __[login](./objects#login)__<br>
 _responses:_<br>
-    + 200 - OK. With __[token](./objects#token)__
+    + 200 - OK. With __[login_response](./objects#login_response)__
     + 400 - Bad request. With __[error](./objects#error)__ 
     + 500 - Internal error
 

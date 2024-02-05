@@ -61,6 +61,6 @@ class Config:
     # TODO: need to change with uuid
     JTI_LEN = 32  # JWT ID
     ACCESS_TOKEN_EXP = 360  # lifetime in seconds
-    ACCESS_TOKEN_CLAIMS = ['iat', 'exp', 'sub', 'iss']
+    ACCESS_TOKEN_CLAIMS = ['iat', 'exp', 'sub', 'iss', 'ueid']
     REFRESH_TOKEN_EXP = 2592000  # 2592000 is 1 month
-    REFRESH_TOKEN_CLAIMS = ['iat', 'exp', 'iss', 'jti', 'sub']
+    REFRESH_TOKEN_CLAIMS = ['iat', 'exp', 'iss', 'jti', 'sub', 'ueid']

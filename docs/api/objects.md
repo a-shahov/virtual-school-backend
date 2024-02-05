@@ -6,14 +6,15 @@
 ---
 
 + __[news](#news)__
-+ __[error](#error)__
++ __[error](#error)__ ok
 + __[oid](#oid)__
-+ __[login](#login)__
-+ __[registration](#registration)__
++ __[login](#login)__ ok
++ __[login_response](#login_response)__ ok
++ __[registration](#registration)__ ok
 + __[main](#main)__
 + __[course](#course)__
-+ __[token](#token)__
-+ __[user](#user)__
++ __[token](#token)__ ok
++ __[user](#user)__ ok
 + __[misc](#misc)__
 + __[notification](#notification)__
 
@@ -137,6 +138,52 @@ __Examples:__<br>
 
 ---
 
+### __login_response__
+
+__Description:__<br>
+_Этот объект состоит из двух объектов **[token](#token)** and **[user](#user)**_
+
+```json
+{
+    "role": "string",
+    "token": <token object>,
+    "user_info": <user object>,
+}
+```
+
+__Description of attributes:__<br>
+
++ __role__ - Роль авторизованного пользователя (user, admin, teacher)
++ __token__ - **[token](#token)** object
++ __user__ - **[user](#user)** object
+
+__Examples:__<br>
+
+```json
+{
+    "role": "user",
+    "token": {
+        "token_type": "Bearer",
+        "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ2aXJ0dWFsLXNjaG9vbC1iYWNrZW5kIiwic3ViIjoidXNlciIsInVlaWQiOjIsImlhdCI6MTcwNzEzNDMyNi41NDU4MDcsImV4cCI6MTcwNzEzNDY4Ni41NDU4MDd9.SUUlvcQvL4EOlKiE7lSSNQjwU7eRn_cAu7VdV1QWMhk",
+        "expires_in": 360,
+        "expires": 1709726327
+    },
+    "user_info": {
+        "login_id": 2,
+        "state": "new",
+        "email": "andrey@yandex.ru",
+        "name": "Андрей",
+        "secondname": "Шахов",
+        "patronymic": "Владимирович",
+        "birthdate": "2000-12-22",
+        "phone": "8996992229",
+        "class": 1
+    }
+}
+```
+
+---
+
 ### __registration__
 
 __Description:__<br>
@@ -175,7 +222,7 @@ __Examples:__<br>
     "secondName": "Шахов",
     "patronymic": "Владимирович",
     "birthdate": "2000-11-22",
-    "phone": "89993332211"
+    "phone": "89993332211",
     "class": 1,
 }
 ```
@@ -239,7 +286,6 @@ _Этот объект используется для отправки access t
 {
     "token_type": "string",
     "access_token": "string",
-    "role": "string",
     "expires_in": "int",
     "expires": "int",
 }
@@ -248,7 +294,6 @@ __Description of attributes:__<br>
 
 + __token_type__ - тип токена всегда должен быть _"Bearer"_
 + __access_token__ - jwt access token, используется для получения доступа к ресурсам, нужно выставлять в заголовок запроса _"Authorization: Bearer \<access token\>"_
-+ __role__ - этот атрибут, служит цели авторизации определённого пользователя, то есть определяет какой спектр API доступен под данным аккаунтом<br>
 _available values:_
     + _anonym_ - любой не аутентифицированный пользователь (псевдосущность в ответе она не приходит)
     + _user_ - пользователь, который зарегистрирован как ученик
@@ -263,7 +308,6 @@ __Examples:__<br>
 {
     "token_type": "Bearer",
     "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ2aXJ0dWFsLXNjaG9vbC1iYWNrZW5kIiwic3ViIjoidXNlciIsImlhdCI6MTcwNDA3ODE1NS4xMzUxNDEsImV4cCI6MTcwNDA3ODUxNS4xMzUxNDF9.5ydbPEfJZoLGd30k18rC4jY1rfHFnCUTfS4EOyTa7Mw",
-    "role": "user",
     "expires_in": 360,
     "expires": 1706670155
 }
@@ -278,21 +322,24 @@ _Этот объект содержит в себе всю информацию 
 
 ```json
 {
-    id: int
-    email: string,
-    name: string,
-    secondName: string,
-    patronymic: string,
-    phone: string,
-    class: int,
+    "login_id": "int",
+    "state": "string",
+    "email": "string",
+    "name": "string",
+    "secondName": "string",
+    "patronymic": "string",
+    "birthdate": "string",
+    "phone": "string",
+    "class": "int",
 }
 ```
 __Description of attributes:__<br>
 
-+ __id__ - уникальный числовой идентификатор, который генерируется на стороне бекенда при регистрации пользователя
++ __login_id__ - уникальный числовой идентификатор, который генерируется на стороне бекенда при регистрации пользователя
++ __state__ - текущее состояние данного пользователя (new, activated, deleted, blocked)
 + __email__ - почта, ограничение 64 символа
 + __name__ - имя пользователя, ограничение 24 символа
-+ __secondName__ - фамилия, ограничение 24 символа
++ __secondname__ - фамилия, ограничение 24 символа
 + __patronymic__ - Отчество, ограничение 24 символа
 + __phone__ - Телефон
 + __class__ - класс
@@ -301,13 +348,14 @@ __Examples:__<br>
 
 ```json
 {
-    id: 15,
-    email: "andrey.shahov@example.com",
-    name: "Андрей",
-    secondName: "Шахов",
-    patronymic: "Владимирович",
-    phone: "89993332211",
-    class: 1,
+    "login_id": 15,
+    "state": "new",
+    "email": "andrey.shahov@example.com",
+    "name": "Андрей",
+    "secondname": "Шахов",
+    "patronymic": "Владимирович",
+    "phone": "89993332211",
+    "class": 1,
 }
 ```
 

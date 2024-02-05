@@ -63,6 +63,9 @@ async def refresh_middleware(request, handler):
             )
         raise HTTPUnauthorized(reason='invalid refresh token')
     
+    if not isinstance(refresh_payload['ueid'], int):
+        raise HTTPUnauthorized(reason='invalid ueid claim in refresh token')
+
     request['refresh_payload'] = refresh_payload
 
     if log.isEnabledFor(logging.DEBUG):

@@ -1,6 +1,7 @@
 import logging
 import sys
 import traceback
+from functools import wraps
 
 from aiohttp.web import (
     json_response,
@@ -26,8 +27,10 @@ log = logging.getLogger('aiohttp.web')
 
 def set_permission(permisions):
     """This functions is used as decorator which sets permissions on handlers"""
+    # TODO: add descriptors
+    # TODO: work with bitwise operators for faster
     valid_perms = {'admin', 'teacher', 'user'}
-    assert all((perm in valid_perms for perm in permisions)), f'this {permisions=}, are not valid'
+    assert all((perm in valid_perms for perm in permisions)), f'{permisions=}, must be in {valid_perms=}'
 
     def wrapper(func):
         func.permissions = permisions
@@ -91,6 +94,9 @@ async def auth_middleware(request, handler):
                 extra={'url': request.rel_url, 'method': request.method},
             )
         raise HTTPUnauthorized(reason='invalid access token')
+    
+    if not isinstance(access_payload['ueid'], int):
+        raise HTTPUnathorized(reason='invalid euid claim in access token')
     
     if log.isEnabledFor(logging.DEBUG):
         log.debug(

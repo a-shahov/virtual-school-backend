@@ -30,6 +30,7 @@ def generate_access_token(config, claims):
     payload = {
         'iss': config.BACKEND_NAME,
         'sub': claims['sub'],
+        'ueid': claims['ueid'],
         'iat': (timestamp := dt.now(tz=UTC).timestamp()),
         'exp': timestamp + config.ACCESS_TOKEN_EXP,
     }
@@ -44,9 +45,11 @@ def generate_access_token(config, claims):
 def generate_refresh_token(config, claims):
     """Generates JWT refresh token"""
 
+    # TODO: need to add method update
     payload = {
         'iss': config.BACKEND_NAME,
         'sub': claims['sub'],
+        'ueid': claims['ueid'],
         'jti': token_urlsafe(config.JTI_LEN),
         'iat': (timestamp := dt.now(tz=UTC).timestamp()),
         'exp': claims.get('exp', timestamp + config.REFRESH_TOKEN_EXP),
@@ -72,7 +75,6 @@ def _validate_ip(value):
             return True
 
     return False
-
 
 def validate_email(email_address):
     """return True if email_address is valid otherwise False"""
@@ -101,21 +103,20 @@ def validate_email(email_address):
 
     try:
         user, domain = email_address.rsplit('@', 1)
-
-        if not USER_REGEXP.match(user):
-            return False
-
-        if domain.startswith('[') and domain.endswith(']'):
-            literal_match = LITERAL_REGEXP.match(domain)
-            if literal_match is None:
-                return False
-            elif not _validate_ip(literal_match.group(1)):
-                return False
-        else:
-            if not HOST_REGEXP.match(domain):
-                return False
-
     except ValueError:
         return False
+
+    if not USER_REGEXP.match(user):
+        return False
+
+    if domain.startswith('[') and domain.endswith(']'):
+        literal_match = LITERAL_REGEXP.match(domain)
+        if literal_match is None:
+            return False
+        elif not _validate_ip(literal_match.group(1)):
+            return False
+    else:
+        if not HOST_REGEXP.match(domain):
+            return False
 
     return True
