@@ -1,9 +1,14 @@
+import logging
+
 from aiohttp.web import (
     View,
     Response,
 ) 
 
 from virtual_school_backend import set_permission
+
+
+log = logging.getLogger('aiohttp.web')
 
 
 class InfoHandler(View):
@@ -13,6 +18,19 @@ class InfoHandler(View):
     
     async def put(self):
         return Response(text='info put')
+
+
+class DocumentsHandler(View):
+    '''View for /main/documents'''
+    async def post(self):
+        reader = await self.request.multipart()
+        field = await reader.next()
+        log.info('dir field %s', dir(field))
+        log.info('field.name %s', field.name)
+        log.info('field %s', await field.read())
+
+        return Response()
+        
 
 
 class NewsHandler(View):

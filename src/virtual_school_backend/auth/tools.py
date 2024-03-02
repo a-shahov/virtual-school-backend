@@ -45,7 +45,6 @@ def generate_access_token(config, claims):
 def generate_refresh_token(config, claims):
     """Generates JWT refresh token"""
 
-    # TODO: need to add method update
     payload = {
         'iss': config.BACKEND_NAME,
         'sub': claims['sub'],
